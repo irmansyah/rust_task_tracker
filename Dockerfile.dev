@@ -1,5 +1,8 @@
 FROM rust:latest
 
+# Install dependencies
+RUN apt-get update && apt-get install -y libpq-dev
+
 # Install cargo-watch
 RUN cargo install cargo-watch
 
@@ -11,5 +14,13 @@ RUN cargo fetch
 
 # Copy source code
 COPY . .
+COPY .env .env
+COPY .env.test .env.test
+
+ENV PORT 8080
+
+EXPOSE $PORT
 
 CMD ["cargo", "watch", "-x", "run"]
+# CMD ["cargo", "run"]
+# CMD ["dev", "cargo", "run"]

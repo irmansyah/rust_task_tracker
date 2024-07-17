@@ -11,15 +11,18 @@ services:
     volumes:
       - .:/usr/src/backend
       - /usr/src/backend/target
+    # command: dev cargo run
+
   nginx:
     container_name: dev_ayohf_nginx
     image: nginx:latest
     ports:
-      - "80:80"
+      - 80:80
     volumes:
       - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf
     depends_on:
       - rustapp
+
   db:
     container_name: dev_ayohf_db
     image: postgres:latest

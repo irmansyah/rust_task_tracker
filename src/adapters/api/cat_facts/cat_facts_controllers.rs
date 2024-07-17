@@ -32,4 +32,3 @@ async fn get_one_random_cat_fact(data: web::Data<AppState>) -> Result<HttpRespon
         .map_err(ErrorReponse::map_io_error)
         .map(|fact| HttpResponse::Ok().json(CatFactPresenterMapper::to_api(fact)))
 }
-
