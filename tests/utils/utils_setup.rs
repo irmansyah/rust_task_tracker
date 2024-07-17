@@ -5,14 +5,14 @@ use uuid::Uuid;
 
 use super::test_context::TestContextPostgreSQL;
 use crate::utils::utils_file::read_from_file;
-use animal_facts_api::adapters::spi::http::http_models::{CatFactApiModel, CatFactsApiModel};
+use ayohf_backend::adapters::spi::http::http_models::{CatFactApiModel, CatFactsApiModel};
 
 pub fn spawn_app(db_name: &str) -> String {
     // Let the OS assign a port (:0)
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
 
     let port = listener.local_addr().unwrap().port();
-    let server = animal_facts_api::run(listener, db_name).expect("Failed to bind address");
+    let server = ayohf_backend::run(listener, db_name).expect("Failed to bind address");
 
     let _ = tokio::spawn(server);
 

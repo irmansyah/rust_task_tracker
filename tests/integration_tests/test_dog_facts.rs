@@ -1,5 +1,5 @@
 use crate::utils::utils_setup::{setup, spawn_app};
-use animal_facts_api::adapters::api::dog_facts::dog_facts_presenters::DogFactPresenter;
+use ayohf_backend::adapters::api::dog_facts::dog_facts_presenters::DogFactPresenter;
 
 #[actix_rt::test]
 async fn test_should_return_multiple_results() {

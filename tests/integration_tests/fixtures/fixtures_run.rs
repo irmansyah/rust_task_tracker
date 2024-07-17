@@ -1,5 +1,5 @@
-use animal_facts_api::adapters::spi::db::db_connection::DbConnection;
-use animal_facts_api::adapters::spi::db::schema::dog_facts::dsl::*;
+use ayohf_backend::adapters::spi::db::db_connection::DbConnection;
+use ayohf_backend::adapters::spi::db::schema::dog_facts::dsl::*;
 use diesel::{insert_into, RunQueryDsl};
 
 use crate::{integration_tests::fixtures::fixtures_struct::DogFactJson, utils::utils_file::read_from_file};

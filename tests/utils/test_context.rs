@@ -1,5 +1,5 @@
 use crate::integration_tests::fixtures::fixtures_run;
-use animal_facts_api::adapters::spi::db::db_connection::DbConnection;
+use ayohf_backend::adapters::spi::db::db_connection::DbConnection;
 use diesel::RunQueryDsl;
 use fixtures_run::execute_imports;
 
