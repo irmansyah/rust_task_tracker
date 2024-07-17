@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/usr/src/backend
+      - /usr/src/backend/target
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - backend
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ayohf_user
+      POSTGRES_PASSWORD: ayohf_password
+      POSTGRES_DB: ayohf_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:

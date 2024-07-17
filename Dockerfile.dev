@@ -1,0 +1,15 @@
+FROM rust:latest
+
+# Install cargo-watch
+RUN cargo install cargo-watch
+
+WORKDIR /usr/src/backend
+
+# Cache dependencies
+COPY Cargo.toml Cargo.lock ./
+RUN cargo fetch
+
+# Copy source code
+COPY . .
+
+CMD ["cargo", "watch", "-x", "run"]
