@@ -1,6 +1,8 @@
 [package]
+authors = ["Irmansyah <irmansyahproject@gmail.com>"]
 name = "ayohf_backend"
 version = "0.1.0"
+license = "Apache-2.0/MIT"
 edition = "2021"
 
 [[bin]]
@@ -29,11 +31,6 @@ tokio = { version = "1.38", features = ["full"] }
 thiserror = "1.0"
 derive_more = "0.99"
 reqwest={version="0.12", features = ["json"]}
-
-# actix-web = "4.0"
-# serde = { version = "1.0", features = ["derive"] }
-# serde_json = "1.0"
-# uuid = { version = "1.0", features = ["serde", "v4"] }
 
 [dev-dependencies]
 cargo-tarpaulin = "0.30"

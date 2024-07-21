@@ -1,4 +1,6 @@
-FROM rust:latest
+# Development environment
+FROM rust:slim-bookworm
+# FROM rust:latest
 
 # Install dependencies
 RUN apt-get update && apt-get install -y libpq-dev
@@ -22,5 +24,3 @@ ENV PORT 8080
 EXPOSE $PORT
 
 CMD ["cargo", "watch", "-x", "run"]
-# CMD ["cargo", "run"]
-# CMD ["dev", "cargo", "run"]

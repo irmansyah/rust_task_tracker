@@ -1,8 +1,42 @@
-FROM rust:latest AS builder
-WORKDIR /usr/src/backend
-COPY . .
-RUN cargo build --release
+# Stage 1: Build
+FROM rust:slim-bookworm AS builder
+# FROM rust:latest
 
-FROM debian:buster-slim
-COPY --from=builder /usr/src/backend/target/release/backend /usr/local/bin/backend
-CMD ["backend"]
+# Install necessary tools
+RUN rustup target add wasm32-unknown-unknown \
+    && cargo install wasm-bindgen-cli \
+    && cargo install --locked trunk
+
+# Set working directory
+WORKDIR /app
+
+# Cache dependencies
+COPY Cargo.toml Cargo.lock ./
+RUN cargo fetch
+
+# Copy source code
+COPY . .
+
+# Build the project
+RUN trunk build --release
+
+# Stage 2: Production
+FROM debian:bullseye-slim
+
+# Install necessary runtime dependencies
+RUN apt-get update && apt-get install -y libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy built artifacts from builder stage
+COPY --from=builder /app/dist /app/dist
+
+# Set environment variables
+ENV PORT 8081
+
+# Expose the port
+EXPOSE 8081
+
+# Command to run the application
+CMD ["trunk", "serve", "--release"]

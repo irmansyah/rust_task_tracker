@@ -1,6 +1,16 @@
 version: '3.8'
 
 services:
+  nginx:
+    container_name: dev_ayohf_nginx
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - rustapp
+
   rustapp:
     container_name: dev_ayohf_rustapp
     build:
@@ -11,20 +21,11 @@ services:
     volumes:
       - .:/usr/src/backend
       - /usr/src/backend/target
-    # command: dev cargo run
-
-  nginx:
-    container_name: dev_ayohf_nginx
-    image: nginx:latest
-    ports:
-      - 80:80
-    volumes:
-      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf
     depends_on:
-      - rustapp
+      - postgres
 
-  db:
-    container_name: dev_ayohf_db
+  postgres:
+    container_name: dev_ayohf_postgres
     image: postgres:latest
     environment:
       POSTGRES_USER: ayohf_user
