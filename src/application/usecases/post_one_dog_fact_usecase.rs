@@ -2,7 +2,7 @@ use async_trait::async_trait;
 
 use crate::{
     adapters::api::dog_facts::dog_facts_payloads::DogFactPayload,
-    applidogion::{repositories::dog_facts_repository_abstract::DogFactsRepositoryAbstract, usecases::interfaces::AbstractPayloadUseCase, utils::error_handling_utils::ErrorHandlingUtils},
+    application::{repositories::dog_facts_repository_abstract::DogFactsRepositoryAbstract, usecases::interfaces::AbstractPayloadUseCase, utils::error_handling_utils::ErrorHandlingUtils},
     domain::{dog_fact_entity::DogFactEntity, error::ApiError},
 };
 
@@ -23,7 +23,7 @@ impl<'a> AbstractPayloadUseCase<DogFactPayload, DogFactEntity> for PostOneDogFac
 
         match dog_fact {
             Ok(fact) => Ok(fact),
-            Err(e) => Err(ErrorHandlingUtils::applidogion_error("Cannot get random dog fact", Some(e))),
+            Err(e) => Err(ErrorHandlingUtils::application_error("Cannot get random dog fact", Some(e))),
         }
     }
 }
@@ -33,21 +33,21 @@ mod tests {
     use super::*;
     use std::io::{Error, ErrorKind};
 
-    use crate::applidogion::{repositories::dog_facts_repository_abstract::MockDogFactsRepositoryAbstract, usecases::post_one_dog_fact_usecase::PostOneDogFactUseCase};
+    use crate::application::{repositories::dog_facts_repository_abstract::MockDogFactsRepositoryAbstract, usecases::post_one_dog_fact_usecase::PostOneDogFactUseCase};
 
     #[actix_rt::test]
     async fn test_should_return_generic_message_when_unexpected_repo_error() {
         // given the "all dog facts" usecase repo with an unexpected error
         let mut dog_fact_repository = MockDogFactsRepositoryAbstract::new();
         dog_fact_repository
-            .expect_get_random_dog_fact()
+            .get_all_dog_facts()
             .with()
             .times(1)
             .returning(|| Err(Box::new(Error::new(ErrorKind::Other, "oh no!"))));
 
         // when calling usecase
         let post_one_dog_fact_usecase = PostOneDogFactUseCase::new(&dog_fact_repository);
-        let new_dog_fact = DogFactPayload::new("1".to_string(), 1);
+        let new_dog_fact = DogFactPayload::new(1, "1".to_string());
         let data = post_one_dog_fact_usecase.execute(new_dog_fact).await;
 
         // then exception
@@ -60,20 +60,20 @@ mod tests {
     async fn test_should_return_one_result() {
         // given the "one random dog fact" usecase repo returning one result
         let mut dog_fact_repository = MockDogFactsRepositoryAbstract::new();
-        dog_fact_repository.expect_get_random_dog_fact().with().times(1).returning(|| {
+        dog_fact_repository.get_all_dog_facts().with().times(1).returning(|| {
             Ok(DogFactEntity {
-                fact_txt: String::from("fact1"),
-                fact_length: 1,
+                fact_id: 1,
+                fact: String::from("fact1"),
             })
         });
 
         // when calling usecase
         let post_one_dog_fact_usecase = PostOneDogFactUseCase::new(&dog_fact_repository);
-        let new_dog_fact = DogFactPayload::new("1".to_string(), 1);
+        let new_dog_fact = DogFactPayload::new(1, "1".to_string());
         let data = post_one_dog_fact_usecase.execute(new_dog_fact).await.unwrap();
 
         // then assert the result is the expected entity
-        assert_eq!(data.fact_txt, "fact1");
-        assert_eq!(data.fact_length, 1);
+        assert_eq!(data.fact_id, 1);
+        assert_eq!(data.fact, "fact1");
     }
 }
