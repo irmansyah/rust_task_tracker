@@ -2,24 +2,27 @@ use async_trait::async_trait;
 
 use crate::{
     adapters::api::cat_facts::cat_facts_payloads::CatFactPayload,
-    application::{repositories::cat_facts_repository_abstract::CatFactsRepositoryAbstract, usecases::interfaces::AbstractPayloadUseCase, utils::error_handling_utils::ErrorHandlingUtils},
+    application::{repositories::cat_facts_repository_abstract::CatFactsRepositoryAbstract, utils::error_handling_utils::ErrorHandlingUtils},
     domain::{cat_fact_entity::CatFactEntity, error::ApiError},
 };
 
+use super::interfaces::AbstractUseCase;
+
 pub struct PostOneCatFactUseCase<'a> {
+    cat_fact_payload: &'a CatFactPayload,
     repository: &'a dyn CatFactsRepositoryAbstract,
 }
 
 impl<'a> PostOneCatFactUseCase<'a> {
-    pub fn new(repository: &'a dyn CatFactsRepositoryAbstract) -> Self {
-        PostOneCatFactUseCase { repository }
+    pub fn new(cat_fact_payload: &'a CatFactPayload, repository: &'a dyn CatFactsRepositoryAbstract) -> Self {
+        PostOneCatFactUseCase { cat_fact_payload, repository }
     }
 }
 
 #[async_trait(?Send)]
-impl<'a> AbstractPayloadUseCase<CatFactPayload, CatFactEntity> for PostOneCatFactUseCase<'a> {
-    async fn execute(&self, cat_fact_payload: CatFactPayload) -> Result<CatFactEntity, ApiError> {
-        let cat_fact = self.repository.post_one_cat_fact(&cat_fact_payload).await;
+impl<'a> AbstractUseCase<CatFactEntity> for PostOneCatFactUseCase<'a> {
+    async fn execute(&self) -> Result<CatFactEntity, ApiError> {
+        let cat_fact = self.repository.post_one_cat_fact(&self.cat_fact_payload).await;
 
         match cat_fact {
             Ok(fact) => Ok(fact),
@@ -46,9 +49,9 @@ mod tests {
             .returning(|| Err(Box::new(Error::new(ErrorKind::Other, "oh no!"))));
 
         // when calling usecase
-        let post_one_cat_fact_usecase = PostOneCatFactUseCase::new(&cat_fact_repository);
-        let new_cat_fact = CatFactPayload::new("1".to_string(), 1);
-        let data = post_one_cat_fact_usecase.execute(new_cat_fact).await;
+        let cat_fact_payload = CatFactPayload::new("That is cat fact 1".to_string(), 2);
+        let post_one_cat_fact_usecase = PostOneCatFactUseCase::new(&cat_fact_payload, &cat_fact_repository);
+        let data = post_one_cat_fact_usecase.execute().await;
 
         // then exception
         assert!(data.is_err());
@@ -68,9 +71,9 @@ mod tests {
         });
 
         // when calling usecase
-        let post_one_cat_fact_usecase = PostOneCatFactUseCase::new(&cat_fact_repository);
-        let new_cat_fact = CatFactPayload::new("1".to_string(), 1);
-        let data = post_one_cat_fact_usecase.execute(new_cat_fact).await.unwrap();
+        let cat_fact_payload = CatFactPayload::new("That is cat fact 1".to_string(), 2);
+        let post_one_cat_fact_usecase = PostOneCatFactUseCase::new(&cat_fact_payload, &cat_fact_repository);
+        let data = post_one_cat_fact_usecase.execute().await.unwrap();
 
         // then assert the result is the expected entity
         assert_eq!(data.fact_txt, "fact1");

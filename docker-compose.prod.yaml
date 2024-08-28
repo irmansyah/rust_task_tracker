@@ -1,24 +1,32 @@
 version: '3.8'
 
 services:
-  rustapp:
-    container_name: prod_ayohf_rustapp
-    build:
-      context: .
-      dockerfile: Dockerfile.prod
-    ports:
-      - "8080:8080"
   nginx:
-    container_name: prod_ayohf_nginx
-    image: nginx:latest
+    container_name: prod_tasktracker_nginx
+    image: nginx:stable-alpine
+    restart: unless-stopped
     ports:
       - "80:80"
     volumes:
       - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf
     depends_on:
       - rustapp
-  db:
-    container_name: prod_ayohf_db
+
+  rustapp:
+    container_name: prod_tasktracker_rustapp
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/usr/src/backend
+      - /usr/src/backend/target
+    depends_on:
+      - postgres
+
+  postgres:
+    container_name: prod_tasktracker_postgres
     image: postgres:latest
     environment:
       POSTGRES_USER: user

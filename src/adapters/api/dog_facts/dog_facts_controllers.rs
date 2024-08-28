@@ -5,7 +5,7 @@ use crate::{
     },
     application::{
         mappers::api_mapper::ApiMapper,
-        usecases::{get_all_dog_facts_usecase::GetAllDogFactsUseCase, get_one_dog_fact_by_id_usecase::GetOneDogFactByIdUseCase, interfaces::{AbstractPayloadUseCase, AbstractUseCase}, post_one_dog_fact_usecase::PostOneDogFactUseCase},
+        usecases::{get_all_dog_facts_usecase::GetAllDogFactsUseCase, get_one_dog_fact_by_id_usecase::GetOneDogFactByIdUseCase, interfaces::{AbstractUseCase}, post_one_dog_fact_usecase::PostOneDogFactUseCase},
     },
     domain::{dog_fact_entity::DogFactEntity, error::ApiError},
 };
@@ -18,12 +18,12 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
 }
 
 #[post("/")]
-async fn post_one_dog_fact(data: web::Data<AppState>, payload: web::Json<DogFactPayload>) -> Result<HttpResponse, ErrorResponse> {
-    let post_one_dog_fact_usecase = PostOneDogFactUseCase::new(&data.dogs_repository);
-    let new_dog_fact = DogFactPayload::new(payload.fact_id.clone(), payload.fact.clone());
+async fn post_one_dog_fact(data: web::Data<AppState>, path: web::Json<DogFactPayload>) -> Result<HttpResponse, ErrorResponse> {
+    let dog_fact_payload = path.into_inner();
+    let post_one_dog_fact_usecase = PostOneDogFactUseCase::new(&dog_fact_payload, &data.dogs_repository);
 
     post_one_dog_fact_usecase
-        .execute(new_dog_fact)
+        .execute()
         .await
         .map_err(ErrorResponse::map_io_error)
         .map(|fact| HttpResponse::Created().json(DogFactPresenterMapper::to_api(fact)))

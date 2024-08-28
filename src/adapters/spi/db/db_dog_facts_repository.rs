@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use diesel::prelude::*;
 use std::error::Error;
+use std::sync::Arc;
 
 use crate::adapters::api::dog_facts::dog_facts_payloads::DogFactPayload;
 use crate::adapters::spi::db::{db_connection::DbConnection, db_mappers::DogFactDbMapper, models::DogFact, schema::dog_facts::dsl::*};
@@ -8,7 +9,7 @@ use crate::application::{mappers::db_mapper::DbMapper, repositories::dog_facts_r
 use crate::domain::dog_fact_entity::DogFactEntity;
 
 pub struct DogFactsRepository {
-    pub db_connection: DbConnection,
+    pub db_connection: Arc<DbConnection>,
 }
 
 #[async_trait(?Send)]

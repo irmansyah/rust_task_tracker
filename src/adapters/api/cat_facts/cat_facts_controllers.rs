@@ -1,5 +1,5 @@
 use crate::application::mappers::api_mapper::ApiMapper;
-use crate::application::usecases::interfaces::{AbstractPayloadUseCase, AbstractUseCase};
+use crate::application::usecases::interfaces::AbstractUseCase;
 use crate::application::usecases::post_one_cat_fact_usecase::PostOneCatFactUseCase;
 use crate::{
     adapters::api::{
@@ -17,13 +17,12 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
 }
 
 #[post("/")]
-async fn post_one_cat_fact(data: web::Data<AppState>, payload: web::Json<CatFactPayload>) -> Result<HttpResponse, ErrorResponse> {
-    let post_one_cat_fact_usecase = PostOneCatFactUseCase::new(&data.cats_repository);
-    // let new_cat_fact = CatFactEntity::new(payload.fact.clone(), payload.fact_length.clone());
-    let new_cat_fact = CatFactPayload::new(payload.fact.clone(), payload.fact_length.clone());
+async fn post_one_cat_fact(data: web::Data<AppState>, path: web::Json<CatFactPayload>) -> Result<HttpResponse, ErrorResponse> {
+    let cat_fact_payload = path.into_inner();
+    let post_one_cat_fact_usecase = PostOneCatFactUseCase::new(&cat_fact_payload, &data.cats_repository);
 
     post_one_cat_fact_usecase
-        .execute(new_cat_fact)
+        .execute()
         .await
         .map_err(ErrorResponse::map_io_error)
         .map(|fact| HttpResponse::Created().json(CatFactPresenterMapper::to_api(fact)))

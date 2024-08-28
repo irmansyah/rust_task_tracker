@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 
-use crate::{adapters::api::cat_facts::cat_facts_payloads::CatFactPayload, domain::cat_fact_entity::CatFactEntity};
+use crate::domain::cat_fact_entity::CatFactEntity;
+use crate::adapters::api::cat_facts::cat_facts_payloads::CatFactPayload;
 
 #[cfg(test)]
 use mockall::{predicate::*, *};

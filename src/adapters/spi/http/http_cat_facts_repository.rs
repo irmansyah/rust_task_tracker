@@ -2,14 +2,11 @@ use async_trait::async_trait;
 use std::error::Error;
 
 use crate::{
-    adapters::{
-        api::cat_facts::cat_facts_payloads::CatFactPayload,
-        spi::http::{
+    adapters::{api::cat_facts::cat_facts_payloads::CatFactPayload, spi::http::{
             http_connection::HttpConnection,
             http_mappers::CatFactHttpMapper,
             http_models::{CatFactApiModel, CatFactsApiModel},
-        },
-    },
+        }},
     application::{mappers::http_mapper::HttpMapper, repositories::cat_facts_repository_abstract::CatFactsRepositoryAbstract},
     domain::cat_fact_entity::CatFactEntity,
 };

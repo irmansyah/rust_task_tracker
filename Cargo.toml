@@ -1,16 +1,16 @@
 [package]
 authors = ["Irmansyah <irmansyahproject@gmail.com>"]
-name = "ayohf_backend"
+name = "tasktracker_backend"
 version = "0.1.0"
 license = "Apache-2.0/MIT"
 edition = "2021"
 
 [[bin]]
-name = "ayohf_backend"
+name = "tasktracker_backend"
 path = "src/main.rs"
 
 [lib]
-name = "ayohf_backend"
+name = "tasktracker_backend"
 path = "src/lib.rs"
 
 [dependencies]

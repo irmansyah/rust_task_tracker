@@ -2,8 +2,9 @@ version: '3.8'
 
 services:
   nginx:
-    container_name: dev_ayohf_nginx
+    container_name: dev_tasktracker_nginx
     image: nginx:stable-alpine
+    restart: unless-stopped
     ports:
       - "80:80"
     volumes:
@@ -12,7 +13,7 @@ services:
       - rustapp
 
   rustapp:
-    container_name: dev_ayohf_rustapp
+    container_name: dev_tasktracker_rustapp
     build:
       context: .
       dockerfile: Dockerfile.dev
@@ -21,16 +22,18 @@ services:
     volumes:
       - .:/usr/src/backend
       - /usr/src/backend/target
+    environment:
+      DATABASE_URL: postgres://tasktracker_user:tasktracker_password@postgres
     depends_on:
       - postgres
 
   postgres:
-    container_name: dev_ayohf_postgres
+    container_name: dev_tasktracker_postgres
     image: postgres:latest
     environment:
-      POSTGRES_USER: ayohf_user
-      POSTGRES_PASSWORD: ayohf_password
-      POSTGRES_DB: ayohf_db
+      POSTGRES_USER: tasktracker_user
+      POSTGRES_PASSWORD: tasktracker_password
+      POSTGRES_DB: tasktracker_db
     volumes:
       - db_data:/var/lib/postgresql/data
 

@@ -3,7 +3,11 @@ FROM rust:slim-bookworm
 # FROM rust:latest
 
 # Install dependencies
-RUN apt-get update && apt-get install -y libpq-dev
+RUN apt-get update && apt-get install -y \
+    libssl-dev \
+    libpq-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install cargo-watch
 RUN cargo install cargo-watch
@@ -16,11 +20,12 @@ RUN cargo fetch
 
 # Copy source code
 COPY . .
-COPY .env .env
-COPY .env.test .env.test
 
+# Set environment variables
 ENV PORT 8080
 
+# Expose the application's port
 EXPOSE $PORT
 
+# Command to run the application with cargo watch
 CMD ["cargo", "watch", "-x", "run"]

@@ -1,4 +1,4 @@
-use ayohf_backend::adapters::spi::db::schema::*;
+use tasktracker_backend::adapters::spi::db::schema::*;
 use diesel::Insertable;
 use serde::Deserialize;
 
