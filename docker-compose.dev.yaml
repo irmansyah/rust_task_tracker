@@ -23,8 +23,8 @@ services:
       - .:/usr/src/backend
       - /usr/src/backend/target
     environment:
-      # DATABASE_URL: postgres://tasktracker_user:tasktracker_password@postgres
-      DATABASE_URL: postgres://tasktracker_user:tasktracker_password@localhost:5432/tasktracker_db
+      DATABASE_URL: postgres://tasktracker_user:tasktracker_password@postgres
+      # DATABASE_URL: postgres://tasktracker_user:tasktracker_password@localhost:5432/tasktracker_db
     depends_on:
       - postgres
 

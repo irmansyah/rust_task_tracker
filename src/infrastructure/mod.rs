@@ -36,7 +36,7 @@ pub fn server(listener: TcpListener, db_name: &str) -> Result<Server, std::io::E
         .listen(listener)?
         .run();
 
-    println!("Server running on port {}, db_name {}", port, db_name);
+    println!("Server running on port : {}, db_name : {}", port, db_name);
 
     Ok(server)
 }
