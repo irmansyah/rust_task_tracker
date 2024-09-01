@@ -24,7 +24,7 @@ impl<'a> AbstractUseCase<TaskEntity> for PostOneTaskUseCase<'a> {
 
         match task {
             Ok(task) => Ok(task),
-            Err(e) => Err(ErrorHandlingUtils::application_error("Cannot get random dog task", Some(e))),
+            Err(e) => Err(ErrorHandlingUtils::application_error("Cannot get random task", Some(e))),
         }
     }
 }
@@ -38,7 +38,7 @@ mod tests {
 
     #[actix_rt::test]
     async fn test_should_return_generic_message_when_unexpected_repo_error() {
-        // given the "all dog tasks" usecase repo with an unexpected random error
+        // given the "all task tasks" usecase repo with an unexpected random error
         let mut task_repository = MockTasksRepositoryAbstract::new();
         let payload = TaskPayload::new(1, "This is text task".to_string());
         task_repository
@@ -53,12 +53,12 @@ mod tests {
         // then exception
         assert!(data.is_err());
         let result = data.unwrap_err();
-        assert_eq!("Cannot get single dog task", result.message);
+        assert_eq!("Cannot get single task", result.message);
     }
 
     #[actix_rt::test]
     async fn test_should_return_one_result() {
-        // given the "one dog task by id" usecase repo returning one result
+        // given the "one task task by id" usecase repo returning one result
         let mut task_repository = MockTasksRepositoryAbstract::new();
         let payload = TaskPayload::new(1, "task 1".to_string());
         task_repository.expect_post_one_task().times(1).returning(|_| {

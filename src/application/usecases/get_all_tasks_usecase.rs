@@ -22,7 +22,7 @@ impl<'a> AbstractUseCase<Vec<TaskEntity>> for GetAllTasksUseCase<'a> {
 
         match tasks {
             Ok(tasks) => Ok(tasks),
-            Err(e) => Err(ErrorHandlingUtils::application_error("Cannot get all dog tasks", Some(e))),
+            Err(e) => Err(ErrorHandlingUtils::application_error("Cannot get all tasks", Some(e))),
         }
     }
 }

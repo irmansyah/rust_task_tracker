@@ -8,6 +8,9 @@ use crate::adapters::spi::db::{db_connection::DbConnection, db_mappers::TaskDbMa
 use crate::application::{mappers::db_mapper::DbMapper, repositories::tasks_repository_abstract::TasksRepositoryAbstract};
 use crate::domain::task_entity::TaskEntity;
 
+use crate::adapters::spi::db::schema::tasks;
+use crate::adapters::spi::db::schema::tasks::id;
+
 pub struct TasksRepository {
     pub db_connection: Arc<DbConnection>,
 }
@@ -15,12 +18,9 @@ pub struct TasksRepository {
 #[async_trait(?Send)]
 impl TasksRepositoryAbstract for TasksRepository {
     async fn post_one_task(&self, task_payload: &TaskPayload) -> Result<TaskEntity, Box<dyn Error>> {
-
-        let new_task = Task::new(task_payload.task_id, task_payload.task);
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
-        let mut conn = self.db_connection.create_task(new_task).expect("couldn't get db connection from pool");
-
-        let new_task = Task::new(task_payload.task_id.clone(), task_payload.task.clone());
+        let new_task = Task::new(task_payload.task_id, task_payload.task.clone());
+        let result = diesel::insert_into(tasks::table).values(&new_task).get_result::<Task>(&mut conn);
 
         match result {
             Ok(model) => Ok(TaskDbMapper::to_entity(model)),

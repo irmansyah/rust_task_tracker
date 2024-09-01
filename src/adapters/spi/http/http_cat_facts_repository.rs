@@ -2,11 +2,14 @@ use async_trait::async_trait;
 use std::error::Error;
 
 use crate::{
-    adapters::{api::cat_facts::cat_facts_payloads::CatFactPayload, spi::http::{
+    adapters::{
+        api::cat_facts::cat_facts_payloads::CatFactPayload,
+        spi::http::{
             http_connection::HttpConnection,
             http_mappers::CatFactHttpMapper,
             http_models::{CatFactApiModel, CatFactsApiModel},
-        }},
+        },
+    },
     application::{mappers::http_mapper::HttpMapper, repositories::cat_facts_repository_abstract::CatFactsRepositoryAbstract},
     domain::cat_fact_entity::CatFactEntity,
 };
@@ -18,7 +21,6 @@ pub struct CatFactsRepository {
 
 #[async_trait(?Send)]
 impl CatFactsRepositoryAbstract for CatFactsRepository {
-
     async fn post_one_cat_fact(&self, cat_fact_payload: &CatFactPayload) -> Result<CatFactEntity, Box<dyn Error>> {
         let url = format!("{}/fact", &self.source);
         let response = self.http_connection.client().post(&url).json(&cat_fact_payload).send().await;

@@ -50,6 +50,10 @@ impl ErrorResponse {
                 status_code: StatusCode::FORBIDDEN,
                 error: e.get_error_message(),
             },
+            404 => ErrorResponse {
+                status_code: StatusCode::NOT_FOUND,
+                error: e.get_error_message(),
+            },
             _ => ErrorResponse {
                 status_code: StatusCode::INTERNAL_SERVER_ERROR,
                 error: String::from("Error: an unknown error occured"),
