@@ -5,22 +5,34 @@ use crate::{
     },
     application::{
         mappers::api_mapper::ApiMapper,
-        usecases::{get_all_tasks_usecase::GetAllTasksUseCase, get_one_task_by_id_usecase::GetOneTaskByIdUseCase, interfaces::AbstractUseCase, post_one_task_usecase::PostOneTaskUseCase},
+        usecases::{get_all_tasks_usecase::GetAllTasksUseCase, get_one_task_by_id_usecase::GetOneTaskByIdUseCase, interfaces::AbstractUseCase, post_one_task_usecase::PostOneTaskUseCase, update_one_task_usecase::UpdateOneTaskUseCase},
     },
     domain::{error::ApiError, task_entity::TaskEntity},
 };
-use actix_web::{get, post, web, HttpResponse};
+use actix_web::{get, patch, post, web, HttpResponse};
 
 use super::tasks_payloads::TaskPayload;
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
-    cfg.service(post_one_task).service(get_all_tasks).service(get_one_task_by_id);
+    cfg.service(post_one_task).service(update_one_task).service(get_all_tasks).service(get_one_task_by_id);
 }
 
 #[post("/")]
 async fn post_one_task(data: web::Data<AppState>, path: web::Json<TaskPayload>) -> Result<HttpResponse, ErrorResponse> {
     let task_payload = path.into_inner();
     let post_one_task_usecase = PostOneTaskUseCase::new(&task_payload, &data.tasks_repository);
+
+    post_one_task_usecase
+        .execute()
+        .await
+        .map_err(ErrorResponse::map_io_error)
+        .map(|task| HttpResponse::Created().json(TaskPresenterMapper::to_api(task)))
+}
+
+#[patch("/")]
+async fn update_one_task(data: web::Data<AppState>, path: web::Json<TaskPayload>) -> Result<HttpResponse, ErrorResponse> {
+    let task_payload = path.into_inner();
+    let post_one_task_usecase = UpdateOneTaskUseCase::new(&task_payload, &data.tasks_repository);
 
     post_one_task_usecase
         .execute()

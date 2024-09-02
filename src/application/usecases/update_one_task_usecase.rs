@@ -6,25 +6,25 @@ use crate::{
     domain::{error::ApiError, task_entity::TaskEntity},
 };
 
-pub struct PostOneTaskUseCase<'a> {
+pub struct UpdateOneTaskUseCase<'a> {
     task_payload: &'a TaskPayload,
     repository: &'a dyn TasksRepositoryAbstract,
 }
 
-impl<'a> PostOneTaskUseCase<'a> {
+impl<'a> UpdateOneTaskUseCase<'a> {
     pub fn new(task_payload: &'a TaskPayload, repository: &'a dyn TasksRepositoryAbstract) -> Self {
-        PostOneTaskUseCase { task_payload, repository }
+        UpdateOneTaskUseCase { task_payload, repository }
     }
 }
 
 #[async_trait(?Send)]
-impl<'a> AbstractUseCase<TaskEntity> for PostOneTaskUseCase<'a> {
+impl<'a> AbstractUseCase<TaskEntity> for UpdateOneTaskUseCase<'a> {
     async fn execute(&self) -> Result<TaskEntity, ApiError> {
-        let task = self.repository.post_one_task(&self.task_payload).await;
+        let task = self.repository.update_one_task(&self.task_payload).await;
 
         match task {
             Ok(task) => Ok(task),
-            Err(e) => Err(ErrorHandlingUtils::application_error("Cannot post task", Some(e))),
+            Err(e) => Err(ErrorHandlingUtils::application_error("Cannot update task", Some(e))),
         }
     }
 }
@@ -34,7 +34,7 @@ mod tests {
     use super::*;
     use std::io::{Error, ErrorKind};
 
-    use crate::application::{repositories::tasks_repository_abstract::MockTasksRepositoryAbstract, usecases::post_one_task_usecase::PostOneTaskUseCase};
+    use crate::application::{repositories::tasks_repository_abstract::MockTasksRepositoryAbstract, usecases::update_one_task_usecase::UpdateOneTaskUseCase};
 
     #[actix_rt::test]
     async fn test_should_return_generic_message_when_unexpected_repo_error() {
@@ -42,18 +42,18 @@ mod tests {
         let mut task_repository = MockTasksRepositoryAbstract::new();
         let payload = TaskPayload::new(1, "This is text task".to_string());
         task_repository
-            .expect_post_one_task()
+            .expect_update_one_task()
             .times(1)
             .returning(|_| Err(Box::new(Error::new(ErrorKind::Other, "oh no!"))));
 
         // when calling usecase
-        let post_one_task_usecase = PostOneTaskUseCase::new(&payload, &task_repository);
-        let data = post_one_task_usecase.execute().await;
+        let update_one_task_usecase = UpdateOneTaskUseCase::new(&payload, &task_repository);
+        let data = update_one_task_usecase.execute().await;
 
         // then exception
         assert!(data.is_err());
         let result = data.unwrap_err();
-        assert_eq!("Cannot get single task", result.message);
+        assert_eq!("Cannot update one task", result.message);
     }
 
     #[actix_rt::test]
@@ -61,7 +61,7 @@ mod tests {
         // given the "one task task by id" usecase repo returning one result
         let mut task_repository = MockTasksRepositoryAbstract::new();
         let payload = TaskPayload::new(1, "task 1".to_string());
-        task_repository.expect_post_one_task().times(1).returning(|_| {
+        task_repository.expect_update_one_task().times(1).returning(|_| {
             Ok(TaskEntity {
                 task_id: 1,
                 task: String::from("task1"),
@@ -69,7 +69,7 @@ mod tests {
         });
 
         // when calling usecase
-        let get_one_task_by_id_usecase = PostOneTaskUseCase::new(&payload, &task_repository);
+        let get_one_task_by_id_usecase = UpdateOneTaskUseCase::new(&payload, &task_repository);
         let data = get_one_task_by_id_usecase.execute().await.unwrap();
 
         // then assert the result is the expected entity

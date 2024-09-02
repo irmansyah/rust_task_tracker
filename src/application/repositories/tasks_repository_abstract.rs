@@ -10,6 +10,7 @@ use std::error::Error;
 #[async_trait(?Send)]
 pub trait TasksRepositoryAbstract {
     async fn post_one_task(&self, task_payload: &TaskPayload) -> Result<TaskEntity, Box<dyn Error>>;
+    async fn update_one_task(&self, task_payload: &TaskPayload) -> Result<TaskEntity, Box<dyn Error>>;
     async fn get_task_by_id(&self, task_id: i32) -> Result<TaskEntity, Box<dyn Error>>;
     async fn get_all_tasks(&self) -> Result<Vec<TaskEntity>, Box<dyn Error>>;
 }
