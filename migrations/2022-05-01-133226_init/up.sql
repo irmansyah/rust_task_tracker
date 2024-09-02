@@ -1,4 +1,4 @@
-CREATE TABLE "dog_facts" (
+CREATE TABLE "tasks" (
   id SERIAL PRIMARY KEY,
-  fact VARCHAR NOT NULL
+  task VARCHAR NOT NULL
 );

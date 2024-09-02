@@ -3,8 +3,8 @@ use diesel::Insertable;
 use serde::Deserialize;
 
 #[derive(Deserialize, Insertable, Debug)]
-#[table_name = "dog_facts"]
-pub struct DogFactJson {
+#[table_name = "tasks"]
+pub struct TaskJson {
     pub id: i32,
-    pub fact: String,
+    pub task: String,
 }

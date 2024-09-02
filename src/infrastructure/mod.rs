@@ -4,8 +4,8 @@ use crate::adapters::{
     self,
     api::shared::app_state::AppState,
     spi::{
-        db::{db_connection::DbConnection, db_dog_facts_repository::DogFactsRepository, db_tasks_repository::TasksRepository},
-        http::{http_cat_facts_repository::CatFactsRepository, http_connection::HttpConnection},
+        db::{db_connection::DbConnection, db_tasks_repository::TasksRepository},
+        // http::{http_cat_facts_repository::CatFactsRepository, http_connection::HttpConnection},
     },
 };
 use actix_web::{dev::Server, middleware::Logger};
@@ -18,15 +18,15 @@ pub fn server(listener: TcpListener, db_name: &str) -> Result<Server, std::io::E
     let _try_init = env_logger::try_init();
 
     let db_connection = Arc::new(DbConnection { db_name: db_name.to_string() });
-    let http_connection = HttpConnection {};
+    // let http_connection = HttpConnection {};
 
     let data = web::Data::new(AppState {
         app_name: String::from("Animal Facts API"),
-        cats_repository: CatFactsRepository {
-            http_connection,
-            source: dotenv::var("CATS_SOURCE").expect("CATS_SOURCE must be set"),
-        },
-        dogs_repository: DogFactsRepository { db_connection: db_connection.clone() },
+        // cats_repository: CatFactsRepository {
+        //     http_connection,
+        //     source: dotenv::var("CATS_SOURCE").expect("CATS_SOURCE must be set"),
+        // },
+        // dogs_repository: DogFactsRepository { db_connection: db_connection.clone() },
         tasks_repository: TasksRepository { db_connection: db_connection.clone() },
     });
 

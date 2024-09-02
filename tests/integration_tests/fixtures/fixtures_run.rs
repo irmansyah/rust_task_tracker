@@ -1,16 +1,16 @@
 use tasktracker_backend::adapters::spi::db::db_connection::DbConnection;
-use tasktracker_backend::adapters::spi::db::schema::dog_facts::dsl::*;
+use tasktracker_backend::adapters::spi::db::schema::tasks::dsl::*;
 use diesel::{insert_into, RunQueryDsl};
 
-use crate::{integration_tests::fixtures::fixtures_struct::DogFactJson, utils::utils_file::read_from_file};
+use crate::{integration_tests::fixtures::fixtures_struct::TaskJson, utils::utils_file::read_from_file};
 
 pub fn execute_imports(conn: &DbConnection) {
-    import_dog_facts_fixtures(conn);
+    import_task_fixtures(conn);
 }
 
-fn import_dog_facts_fixtures(conn: &DbConnection) {
-    let json = read_from_file::<Vec<DogFactJson>>("tests/integration_tests/fixtures/dog_facts.json").unwrap();
+fn import_task_fixtures(conn: &DbConnection) {
+    let json = read_from_file::<Vec<TaskJson>>("tests/integration_tests/fixtures/tasks.json").unwrap();
 
     let conn = conn.get_pool().get().expect("couldn't get db connection from pool");
-    insert_into(dog_facts).values(&json).execute(conn).unwrap();
+    insert_into(tasks).values(&json).execute(&mut conn).unwrap();
 }
