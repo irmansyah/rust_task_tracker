@@ -24,7 +24,7 @@ impl<'a> AbstractUseCase<TaskEntity> for UpdateOneTaskUseCase<'a> {
 
         match task {
             Ok(task) => Ok(task),
-            Err(e) => Err(ErrorHandlingUtils::application_error("Cannot update task", Some(e))),
+            Err(e) => Err(ErrorHandlingUtils::application_error("Cannot update single task", Some(e))),
         }
     }
 }
