@@ -7,8 +7,9 @@ pub struct TaskPresenterMapper {}
 impl ApiMapper<TaskEntity, TaskPresenter, TaskPayload> for TaskPresenterMapper {
     fn to_api(entity: TaskEntity) -> TaskPresenter {
         TaskPresenter {
-            task_id: entity.task_id,
-            txt: entity.task,
+            task_id: entity.id,
+            title: entity.title,
+            description: entity.description,
         }
     }
 

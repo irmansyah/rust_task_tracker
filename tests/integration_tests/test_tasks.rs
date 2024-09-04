@@ -18,7 +18,7 @@ async fn test_should_return_multiple_results() {
     let content_json = response.json::<Vec<TaskPresenter>>().await.unwrap();
 
     assert_eq!(content_json.len(), 3);
-    assert_eq!(content_json[0].txt, "Forty-five percent of U.S. tasks sleep in their owner's bed");
+    assert_eq!(content_json[0].title, "Forty-five percent of U.S. tasks sleep in their owner's bed");
     assert_eq!(content_json[0].task_id, 1);
 }
 
@@ -39,6 +39,6 @@ async fn test_should_return_one_results_only() {
 
     let content_json = response.json::<TaskPresenter>().await.unwrap();
 
-    assert_eq!(content_json.txt, "Seventy percent of people sign their task's name on their holiday cards");
+    assert_eq!(content_json.title, "Seventy percent of people sign their task's name on their holiday cards");
     assert_eq!(content_json.task_id, 2);
 }
