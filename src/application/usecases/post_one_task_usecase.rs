@@ -40,7 +40,7 @@ mod tests {
     async fn test_should_return_generic_message_when_unexpected_repo_error() {
         // given the "all task tasks" usecase repo with an unexpected random error
         let mut task_repository = MockTasksRepositoryAbstract::new();
-        let payload = TaskPayload::new(1, "This is text task".to_string());
+        let payload = TaskPayload::new(1, Some(String::from("task1")), todo!(), todo!(), todo!(), todo!(), todo!(), todo!(), todo!(), todo!());
         task_repository
             .expect_post_one_task()
             .times(1)
@@ -60,20 +60,15 @@ mod tests {
     async fn test_should_return_one_result() {
         // given the "one task task by id" usecase repo returning one result
         let mut task_repository = MockTasksRepositoryAbstract::new();
-        let payload = TaskPayload::new(1, "task 1".to_string());
-        task_repository.expect_post_one_task().times(1).returning(|_| {
-            Ok(TaskEntity {
-                task_id: 1,
-                task: String::from("task1"),
-            })
-        });
+        let payload = TaskPayload::new(1, Some(String::from("task1")), todo!(), todo!(), todo!(), todo!(), todo!(), todo!(), todo!(), todo!());
+        task_repository.expect_post_one_task().times(1).returning(|_| Ok(payload));
 
         // when calling usecase
         let get_one_task_by_id_usecase = PostOneTaskUseCase::new(&payload, &task_repository);
         let data = get_one_task_by_id_usecase.execute().await.unwrap();
 
         // then assert the result is the expected entity
-        assert_eq!(data.task_id, 1);
-        assert_eq!(data.task, "task1");
+        assert_eq!(data.id, 1);
+        assert_eq!(data.title, "task1");
     }
 }

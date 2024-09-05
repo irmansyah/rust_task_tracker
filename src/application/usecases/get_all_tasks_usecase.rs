@@ -75,12 +75,28 @@ mod tests {
         task_repository.expect_get_all_tasks().with().times(1).returning(|| {
             Ok(vec![
                 TaskEntity {
-                    task_id: 1,
-                    task: String::from("task1"),
+                    id: 1,
+                    title: String::from("task1"),
+                    typ: todo!(),
+                    priority: todo!(),
+                    status: todo!(),
+                    description: todo!(),
+                    duration: todo!(),
+                    due_date: todo!(),
+                    project_id: todo!(),
+                    task_list: todo!(),
                 },
                 TaskEntity {
-                    task_id: 2,
-                    task: String::from("task2"),
+                    id: 2,
+                    title: String::from("task1"),
+                    typ: todo!(),
+                    priority: todo!(),
+                    status: todo!(),
+                    description: todo!(),
+                    duration: todo!(),
+                    due_date: todo!(),
+                    project_id: todo!(),
+                    task_list: todo!(),
                 },
             ])
         });

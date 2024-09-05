@@ -40,6 +40,36 @@ pub enum TaskStatusPayload {
     None,
 }
 
+impl Default for TaskTypePayload {
+    fn default() -> Self {
+        TaskTypePayload::None
+    }
+}
+
+impl Default for TaskPriorityPayload {
+    fn default() -> Self {
+        TaskPriorityPayload::None
+    }
+}
+
+impl Default for TaskStatusPayload {
+    fn default() -> Self {
+        TaskStatusPayload::None
+    }
+}
+
+impl Default for TaskStatusToDoPayload {
+    fn default() -> Self {
+        TaskStatusToDoPayload::None
+    }
+}
+
+impl Default for TaskStatusInProgressPayload {
+    fn default() -> Self {
+        TaskStatusInProgressPayload::None
+    }
+}
+
 impl fmt::Display for TaskTypePayload {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -48,7 +78,7 @@ impl fmt::Display for TaskTypePayload {
             TaskTypePayload::None => write!(f, "None"),
         }
     }
-}
+}   
 
 impl fmt::Display for TaskPriorityPayload {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -57,6 +87,17 @@ impl fmt::Display for TaskPriorityPayload {
             TaskPriorityPayload::Medium => write!(f, "Medium"),
             TaskPriorityPayload::High => write!(f, "High"),
             TaskPriorityPayload::None => write!(f, "None"),
+        }
+    }
+}
+
+impl fmt::Display for TaskStatusPayload {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TaskStatusPayload::ToDo(status) => write!(f, "ToDo: ({})", status),
+            TaskStatusPayload::InProgress(status) => write!(f, "In Progress: ({})", status),
+            TaskStatusPayload::Completed => write!(f, "Completed"),
+            TaskStatusPayload::None => write!(f, "None"),
         }
     }
 }
@@ -82,43 +123,32 @@ impl fmt::Display for TaskStatusInProgressPayload {
     }
 }
 
-impl fmt::Display for TaskStatusPayload {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            TaskStatusPayload::ToDo(status) => write!(f, "ToDo: ({})", status),
-            TaskStatusPayload::InProgress(status) => write!(f, "In Progress: ({})", status),
-            TaskStatusPayload::Completed => write!(f, "Completed"),
-            TaskStatusPayload::None => write!(f, "None"),
-        }
-    }
-}
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TaskPayload {
     // implement for POST/UPDATE requests
-    pub task_id: String,
-    pub title: String,
-    pub typ: TaskTypePayload,
-    pub priority: TaskPriorityPayload,
-    pub status: TaskStatusPayload,
+    pub task_id: i32,
+    pub title: Option<String>,
+    pub typ: Option<TaskTypePayload>,
+    pub priority: Option<TaskPriorityPayload>,
+    pub status: Option<TaskStatusPayload>,
     pub description: Option<String>,
     pub duration: Option<i32>,
     pub due_date: Option<i64>,
-    pub project_id: Option<String>,
+    pub project_id: Option<i32>,
     pub task_list: Option<Vec<String>>,
 }
 
 impl TaskPayload {
     pub fn new(
-        task_id: String, 
-        title: String, 
-        typ: TaskTypePayload, 
-        priority: TaskPriorityPayload, 
-        status: TaskStatusPayload,
+        task_id: i32, 
+        title: Option<String>, 
+        typ: Option<TaskTypePayload>, 
+        priority: Option<TaskPriorityPayload>, 
+        status: Option<TaskStatusPayload>,
         description: Option<String>, 
         duration: Option<i32>, 
         due_date: Option<i64>, 
-        project_id: Option<String>, 
+        project_id: Option<i32>, 
         task_list: Option<Vec<String>>,
     ) -> Self {
         TaskPayload {

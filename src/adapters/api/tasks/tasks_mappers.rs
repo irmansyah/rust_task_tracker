@@ -9,7 +9,14 @@ impl ApiMapper<TaskEntity, TaskPresenter, TaskPayload> for TaskPresenterMapper {
         TaskPresenter {
             task_id: entity.id,
             title: entity.title,
-            description: entity.description,
+            typ: entity.typ.unwrap(),
+            priority: entity.priority.unwrap(),
+            status: entity.status.unwrap(),
+            description: entity.description.unwrap(),
+            duration: entity.duration.unwrap_or_default(),
+            due_date: entity.due_date.unwrap_or_default(),
+            project_id: entity.project_id.unwrap_or_default(),
+            task_list: entity.task_list.unwrap_or_default(),
         }
     }
 

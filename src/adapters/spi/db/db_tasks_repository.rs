@@ -4,14 +4,13 @@ use std::error::Error;
 use std::sync::Arc;
 
 use crate::adapters::api::tasks::tasks_payloads::TaskPayload;
-use crate::adapters::spi::db::{db_connection::DbConnection, db_mappers::TaskDbMapper, models::Task, schema::tasks::dsl::*};
+use crate::adapters::spi::db::{db_connection::DbConnection, db_mappers::TaskDbMapper, schema::tasks::dsl::*};
 use crate::application::{mappers::db_mapper::DbMapper, repositories::tasks_repository_abstract::TasksRepositoryAbstract};
 use crate::domain::task_entity::TaskEntity;
 
 use crate::adapters::spi::db::schema::tasks;
-use crate::adapters::spi::db::schema::tasks::id;
 
-use super::models::{NewTask, UpdateTask};
+use super::models::{NewTask, Task};
 
 pub struct TasksRepository {
     pub db_connection: Arc<DbConnection>,
@@ -21,19 +20,30 @@ pub struct TasksRepository {
 impl TasksRepositoryAbstract for TasksRepository {
     async fn post_one_task(&self, task_payload: &TaskPayload) -> Result<TaskEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
+
+        let data_title = task_payload.title.clone().unwrap_or_default();
+        let data_typ = task_payload.typ.clone().unwrap_or_default().to_string();
+        let data_priority = task_payload.priority.clone().unwrap_or_default().to_string();
+        let data_status = task_payload.status.clone().unwrap_or_default().to_string();
+        let data_description = task_payload.description.clone().unwrap_or_default();
+        let data_duration = task_payload.duration.unwrap_or_default();
+        let data_due_date = task_payload.due_date.unwrap_or_default();
+        let data_project_id = task_payload.project_id.unwrap_or_default();
+        let data_task_list: Option<Vec<&str>> = task_payload.task_list.as_ref().map(|vec| vec.iter().map(|s| s.as_str()).collect());
+
         let new_task = NewTask {
-            title: &task_payload.title,
-            typ: Some(&task_payload.typ.to_string()),
-            priority: Some(&task_payload.priority.to_string()),
-            status: Some(&task_payload.status.to_string()),
-            description: task_payload.description.as_deref(),
-            duration: task_payload.duration,
-            due_date: task_payload.due_date,
-            project_id: task_payload.project_id.as_deref(),
-            task_list: Some(task_payload.task_list.map(|f| f.to_string())),
+            title: Some(&data_title),
+            typ: Some(&data_typ),
+            priority: Some(&data_priority),
+            status: Some(&data_status),
+            description: Some(&data_description),
+            duration: Some(data_duration),
+            due_date: Some(data_due_date),
+            project_id: Some(data_project_id),
+            task_list: data_task_list,
         };
 
-        let result = diesel::insert_into(tasks::table).values(TaskDbMapper::to_db(new_task)).get_result::<NewTask>(&mut conn);
+        let result = diesel::insert_into(tasks::table).values(&new_task).returning(Task::as_returning()).get_result(&mut conn);
 
         match result {
             Ok(model) => Ok(TaskDbMapper::to_entity(model)),
@@ -43,44 +53,22 @@ impl TasksRepositoryAbstract for TasksRepository {
 
     async fn update_one_task(&self, task_payload: &TaskPayload) -> Result<TaskEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
-        let mut filter = tasks::table.filter(tasks::id.eq(task_payload.task_id));
-
-        let update_task = UpdateTask {
-            title: task_payload.title.to_str(),
-            typ: task_payload.typ.to_string().clone(),
-            priority: task_payload.priority.to_string().clone(),
-            status: task_payload.status.to_string().clone(),
-            description: task_payload.description.clone(),
-            duration: task_payload.duration,
-            due_date: task_payload.due_date,
-            project_id: task_payload.project_id,
-            task_list: task_payload.task_list,
-        };
-        let result = diesel::update(filter).set(update_task).get_result::<Task>(&mut conn);
-
-        // let result = diesel::update(filter)
-        //     .set((
-        //             tasks::title.eq(task_payload.title),
-        //             tasks::typ.eq(task_payload.typ.to_string()),
-        //             tasks::priority.eq(task_payload.priority.to_string()),
-        //             tasks::status.eq(task_payload.status.to_string()),
-        //             tasks::description.eq(Some(task_payload.description)),
-        //             tasks::duration.eq(Some(task_payload.duration)),
-        //             tasks::due_date.eq(Some(task_payload.due_date_int)),
-        //             tasks::project_id.eq(Some(task_payload.project_id)),
-        //             tasks::task_list.eq(task_payload.task_list),
-        //     ))
-        //     .get_result::<Task>(&mut conn);
-
-        // title -> Varchar,
-        // typ -> Varchar,
-        // priority -> Varchar,
-        // status -> Varchar,
-        // description -> Nullable<Varchar>,
-        // duration -> Nullable<Int4>,
-        // due_date -> Nullable<BigInt>,
-        // project_id -> Nullable<Int4>,
-        // task_list ->  Nullable<Array<Text>>,
+        let data_task_list: Option<Vec<&str>> = task_payload.task_list.as_ref().map(|vec| vec.iter().map(|s| s.as_str()).collect());
+        let target = tasks.filter(id.eq(task_payload.task_id));
+        let result = diesel::update(target)
+            .set((
+                task_payload.title.clone().map(|data| title.eq(data)),
+                task_payload.typ.clone().map(|data| typ.eq(data.to_string())),
+                task_payload.priority.clone().map(|data| priority.eq(data.to_string())),
+                task_payload.status.clone().map(|data| priority.eq(data.to_string())),
+                task_payload.description.clone().map(|data| description.eq(data)),
+                task_payload.duration.map(|data| duration.eq(data)),
+                task_payload.due_date.map(|data| due_date.eq(data)),
+                task_payload.project_id.map(|data| project_id.eq(data)),
+                data_task_list.map(|data| task_list.eq(data)),
+            ))
+            .returning(Task::as_returning())
+            .get_result(&mut conn);
 
         match result {
             Ok(model) => Ok(TaskDbMapper::to_entity(model)),

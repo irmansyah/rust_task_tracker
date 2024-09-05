@@ -1,8 +1,6 @@
-use uuid::Uuid;
-
 #[derive(Debug, Clone)]
 pub struct TaskEntity {
-    pub id: Uuid,
+    pub id: i32,
     pub title: String,
     pub typ: Option<String>,
     pub priority: Option<String>,
@@ -10,13 +8,13 @@ pub struct TaskEntity {
     pub description: Option<String>,
     pub duration: Option<i32>,
     pub due_date: Option<i64>,
-    pub project_id: Option<Uuid>,
+    pub project_id: Option<i32>,
     pub task_list: Option<Vec<String>>,
 }
 
 impl TaskEntity {
     pub fn new(
-        id: Uuid,
+        id: i32,
         title: String,
         typ: Option<String>,
         priority: Option<String>,
@@ -24,7 +22,7 @@ impl TaskEntity {
         description: Option<String>,
         duration: Option<i32>,
         due_date: Option<i64>,
-        project_id: Option<Uuid>,
+        project_id: Option<i32>,
         task_list: Option<Vec<String>>,
     ) -> Self {
         TaskEntity {

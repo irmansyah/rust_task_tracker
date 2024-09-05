@@ -1,10 +1,13 @@
 CREATE TABLE "tasks" (
-  id SERIAL PRIMARY KEY,
-  typ VARCHAR NOT NULL,
-  title VARCHAR NOT NULL,
-  description VARCHAR NOT NULL,
-  status VARCHAR NOT NULL
-  duration INTEGER,
-  due_date BIGINT,
-  task_list TEXT[],
+    id SERIAL PRIMARY KEY,
+    title VARCHAR,
+    typ TEXT,
+    priority TEXT,
+    status TEXT,
+    description TEXT,
+    duration INTEGER,
+    due_date BIGINT,
+    project_id INTEGER,
+    task_list TEXT[]
 );
+

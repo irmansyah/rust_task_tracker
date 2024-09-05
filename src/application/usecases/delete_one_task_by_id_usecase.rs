@@ -62,8 +62,16 @@ mod tests {
         let mut task_repository = MockTasksRepositoryAbstract::new();
         task_repository.expect_get_task_by_id().with(eq(1)).times(1).returning(|_| {
             Ok(TaskEntity {
-                task_id: 1,
-                task: String::from("task1"),
+                id: 1,
+                title: String::from("task1"),
+                typ: todo!(),
+                priority: todo!(),
+                status: todo!(),
+                description: todo!(),
+                duration: todo!(),
+                due_date: todo!(),
+                project_id: todo!(),
+                task_list: todo!(),
             })
         });
 
