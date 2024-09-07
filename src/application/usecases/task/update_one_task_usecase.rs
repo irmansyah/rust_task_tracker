@@ -34,7 +34,7 @@ mod tests {
     use super::*;
     use std::io::{Error, ErrorKind};
 
-    use crate::application::{repositories::tasks_repository_abstract::MockTasksRepositoryAbstract, usecases::update_one_task_usecase::UpdateOneTaskUseCase};
+    use crate::application::{repositories::tasks_repository_abstract::MockTasksRepositoryAbstract, usecases::task::update_one_task_usecase::UpdateOneTaskUseCase};
 
     #[actix_rt::test]
     async fn test_should_return_generic_message_when_unexpected_repo_error() {
@@ -62,9 +62,7 @@ mod tests {
         let mut task_repository = MockTasksRepositoryAbstract::new();
         let payload = TaskPayload::new(1, "task 1".to_string());
         task_repository.expect_update_one_task().times(1).returning(|_| {
-            Ok(TaskEntity {
-                task_id: 1,
-                task: String::from("task1"),
+            Ok(TaskEntity {id:1,title:String::from("task1"), typ: todo!(), priority: todo!(), status: todo!(), description: todo!(), duration: todo!(), due_date: todo!(), project_id: todo!(), task_list: todo!() }
             })
         });
 
@@ -74,6 +72,6 @@ mod tests {
 
         // then assert the result is the expected entity
         assert_eq!(data.task_id, 1);
-        assert_eq!(data.task, "task1");
+        assert_eq!(data.title, "task1");
     }
 }

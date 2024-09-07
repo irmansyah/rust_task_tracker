@@ -10,7 +10,7 @@ use crate::domain::task_entity::TaskEntity;
 
 use crate::adapters::spi::db::schema::tasks;
 
-use super::models::{NewTask, Task};
+use super::task_model::{NewTask, Task};
 
 pub struct TasksRepository {
     pub db_connection: Arc<DbConnection>,

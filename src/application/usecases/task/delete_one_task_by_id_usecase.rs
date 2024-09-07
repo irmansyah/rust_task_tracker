@@ -80,7 +80,7 @@ mod tests {
         let data = get_one_task_by_id_usecase.execute().await.unwrap();
 
         // then assert the result is the expected entity
-        assert_eq!(data.task_id, 1);
-        assert_eq!(data.task, "task1");
+        assert_eq!(data.id, 1);
+        assert_eq!(data.title, "task1");
     }
 }

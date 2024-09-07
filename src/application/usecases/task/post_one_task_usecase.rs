@@ -34,7 +34,7 @@ mod tests {
     use super::*;
     use std::io::{Error, ErrorKind};
 
-    use crate::application::{repositories::tasks_repository_abstract::MockTasksRepositoryAbstract, usecases::post_one_task_usecase::PostOneTaskUseCase};
+    use crate::application::{repositories::tasks_repository_abstract::MockTasksRepositoryAbstract, usecases::task::post_one_task_usecase::PostOneTaskUseCase};
 
     #[actix_rt::test]
     async fn test_should_return_generic_message_when_unexpected_repo_error() {

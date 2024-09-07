@@ -1,4 +1,21 @@
 diesel::table! {
+    users (id) {
+        id -> Int4,
+        username -> Varchar,
+        email -> Varchar,
+        password -> Varchar,
+    }
+}
+
+diesel::table! {
+    projects (id) {
+        id -> Int4,
+        name -> Varchar,
+        description -> Nullable<Varchar>,
+    }
+}
+
+diesel::table! {
     tasks (id) {
         id -> Int4,
         title -> Nullable<Varchar>,
@@ -10,14 +27,6 @@ diesel::table! {
         due_date -> Nullable<BigInt>,
         project_id -> Nullable<Int4>,
         task_list ->  Nullable<Array<Text>>,
-    }
-}
-
-diesel::table! {
-    projects (id) {
-        id -> Int4,
-        name -> Varchar,
-        description -> Nullable<Varchar>,
     }
 }
 

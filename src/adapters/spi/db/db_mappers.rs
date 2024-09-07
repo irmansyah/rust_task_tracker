@@ -1,9 +1,13 @@
 use crate::application::mappers::db_mapper::DbMapper;
 use crate::domain::task_entity::TaskEntity;
+use crate::domain::user_entity::UserEntity;
 
-use super::models::Task;
+use super::user_model::User;
+use super::task_model::Task;
 
 pub struct TaskDbMapper {}
+
+pub struct UserDbMapper {}
 
 impl DbMapper<TaskEntity, Task> for TaskDbMapper {
     fn to_db(entity: TaskEntity) -> Task {
@@ -14,23 +18,10 @@ impl DbMapper<TaskEntity, Task> for TaskDbMapper {
             status: entity.status,
             priority: entity.priority,
             description: entity.description,
-            duration: todo!(),
-            due_date: todo!(),
-            project_id: todo!(),
-            task_list: todo!(),
-            // typ: todo!(),
-            // status: todo!(),
-            // duration: todo!(),
-            // due_date: todo!(),
-            // project_id: todo!(),
-            // task_list: todo!(),
-            // typ: entity.typ,
-            // priority: entity.priority,
-            // status: entity.status,
-            // duration: entity.duration,
-            // due_date: entity.due_date,
-            // project_id: entity.project_id,
-            // task_list: entity.task_list,
+            duration: entity.duration,
+            due_date: entity.due_date,
+            project_id: entity.project_id,
+            task_list: entity.task_list,
         }
     }
 
@@ -46,6 +37,26 @@ impl DbMapper<TaskEntity, Task> for TaskDbMapper {
             due_date: model.due_date,
             project_id: model.project_id,
             task_list: model.task_list,
+        }
+    }
+}
+
+impl DbMapper<UserEntity, User> for UserDbMapper {
+    fn to_db(entity: UserEntity) -> User {
+        User {
+            id: entity.id,
+            username: entity.username,
+            email: entity.email,
+            password: entity.password,
+        }
+    }
+
+    fn to_entity(model: User) -> UserEntity {
+        UserEntity {
+            id: model.id.to_owned(),
+            username: model.username,
+            email: model.email,
+            password: model.password,
         }
     }
 }
