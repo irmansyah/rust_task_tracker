@@ -13,3 +13,10 @@ pub struct TaskPresenter {
     pub project_id: i32,
     pub task_list: Vec<String>,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TaskAllPresenter {
+    pub task_id: i32,
+    pub title: String,
+    pub description: String,
+}

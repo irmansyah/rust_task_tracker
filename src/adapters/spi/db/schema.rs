@@ -15,14 +15,44 @@ diesel::table! {
     }
 }
 
+// diesel::table! {
+//     tasks (id) {
+//         id -> Int4,
+//         title -> Nullable<Varchar>,
+//         typ -> Nullable<Text>,
+//         priority -> Nullable<Text>,
+//         status -> Nullable<Text>,
+//         description -> Nullable<Text>,
+//         duration -> Nullable<Int4>,
+//         due_date -> Nullable<BigInt>,
+//         project_id -> Nullable<Int4>,
+//         task_list ->  Nullable<Array<Text>>,
+//     }
+// }
+
+// diesel::table! {
+//     tasks (id) {
+//         id -> Int4,
+//         title -> Text,
+//         typ -> Text,
+//         priority -> Text,
+//         status -> Text,
+//         description -> Text,
+//         duration -> Int4,
+//         due_date -> BigInt,
+//         project_id -> Int4,
+//         task_list ->  Array<Text>,
+//     }
+// }
+
 diesel::table! {
     tasks (id) {
         id -> Int4,
-        title -> Nullable<Varchar>,
+        title -> Text,
         typ -> Nullable<Text>,
         priority -> Nullable<Text>,
         status -> Nullable<Text>,
-        description -> Nullable<Text>,
+        description -> Text,
         duration -> Nullable<Int4>,
         due_date -> Nullable<BigInt>,
         project_id -> Nullable<Int4>,

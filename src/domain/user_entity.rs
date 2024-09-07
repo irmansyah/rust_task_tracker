@@ -21,3 +21,27 @@ impl UserEntity {
         }
     }
 }
+
+// #[derive(Debug, Clone)]
+// pub struct UserGetAllEntity {
+//     pub id: i32,
+//     pub username: String,
+//     pub email: String,
+//     pub password: String,
+// }
+
+// impl UserGetAllEntity {
+//     pub fn new(
+//         id: i32,
+//         username: String,
+//         email: String,
+//         password: String,
+//     ) -> Self {
+//         UserGetAllEntity {
+//             id,
+//             username,
+//             email,
+//             password,
+//         }
+//     }
+// }

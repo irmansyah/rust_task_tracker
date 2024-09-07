@@ -1,18 +1,18 @@
 use async_trait::async_trait;
 
 use crate::{
-    adapters::api::tasks::tasks_payloads::TaskPayload,
+    adapters::api::tasks::tasks_payloads::TaskCreatePayload,
     application::{repositories::tasks_repository_abstract::TasksRepositoryAbstract, usecases::interfaces::AbstractUseCase, utils::error_handling_utils::ErrorHandlingUtils},
     domain::{error::ApiError, task_entity::TaskEntity},
 };
 
 pub struct PostOneTaskUseCase<'a> {
-    task_payload: &'a TaskPayload,
+    task_payload: &'a TaskCreatePayload,
     repository: &'a dyn TasksRepositoryAbstract,
 }
 
 impl<'a> PostOneTaskUseCase<'a> {
-    pub fn new(task_payload: &'a TaskPayload, repository: &'a dyn TasksRepositoryAbstract) -> Self {
+    pub fn new(task_payload: &'a TaskCreatePayload, repository: &'a dyn TasksRepositoryAbstract) -> Self {
         PostOneTaskUseCase { task_payload, repository }
     }
 }
@@ -34,13 +34,23 @@ mod tests {
     use super::*;
     use std::io::{Error, ErrorKind};
 
-    use crate::application::{repositories::tasks_repository_abstract::MockTasksRepositoryAbstract, usecases::task::post_one_task_usecase::PostOneTaskUseCase};
+    use crate::{adapters::api::tasks::tasks_payloads::{TaskPriorityPayload, TaskStatusPayload, TaskStatusToDoPayload, TaskTypePayload}, application::{repositories::tasks_repository_abstract::MockTasksRepositoryAbstract, usecases::task::post_one_task_usecase::PostOneTaskUseCase}};
 
     #[actix_rt::test]
     async fn test_should_return_generic_message_when_unexpected_repo_error() {
         // given the "all task tasks" usecase repo with an unexpected random error
         let mut task_repository = MockTasksRepositoryAbstract::new();
-        let payload = TaskPayload::new(1, Some(String::from("task1")), todo!(), todo!(), todo!(), todo!(), todo!(), todo!(), todo!(), todo!());
+        let payload = TaskCreatePayload::new(
+            String::from("task1"),
+            Some(TaskTypePayload::Work),
+            Some(TaskPriorityPayload::Low),
+            Some(TaskStatusPayload::ToDo(TaskStatusToDoPayload::NotStarted)),
+            Some(String::from("")),
+            Some(1),
+            Some(321472382),
+            Some(1),
+            Some([].to_vec()),
+        );
         task_repository
             .expect_post_one_task()
             .times(1)
@@ -60,8 +70,31 @@ mod tests {
     async fn test_should_return_one_result() {
         // given the "one task task by id" usecase repo returning one result
         let mut task_repository = MockTasksRepositoryAbstract::new();
-        let payload = TaskPayload::new(1, Some(String::from("task1")), todo!(), todo!(), todo!(), todo!(), todo!(), todo!(), todo!(), todo!());
-        task_repository.expect_post_one_task().times(1).returning(|_| Ok(payload));
+        let payload = TaskCreatePayload::new(
+            String::from("task1"),
+            Some(TaskTypePayload::Work),
+            Some(TaskPriorityPayload::Low),
+            Some(TaskStatusPayload::ToDo(TaskStatusToDoPayload::NotStarted)),
+            Some(String::from("")),
+            Some(1),
+            Some(321472382),
+            Some(1),
+            Some([].to_vec()),
+        );
+        task_repository.expect_post_one_task().times(1).returning(|_| {
+            Ok(TaskEntity {
+                id: 1,
+                title: String::from(""),
+                typ: String::from(""),
+                priority: String::from(""),
+                status: String::from(""),
+                description: String::from(""),
+                duration: 1,
+                due_date: 321472382,
+                project_id: 1,
+                task_list: [].to_vec(),
+            })
+        });
 
         // when calling usecase
         let get_one_task_by_id_usecase = PostOneTaskUseCase::new(&payload, &task_repository);

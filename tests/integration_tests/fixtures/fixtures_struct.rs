@@ -6,5 +6,5 @@ use serde::Deserialize;
 #[table_name = "tasks"]
 pub struct TaskJson {
     pub id: i32,
-    pub task: String,
+    pub title: String,
 }

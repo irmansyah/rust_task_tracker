@@ -1,18 +1,18 @@
 use async_trait::async_trait;
 
 use crate::{
-    adapters::api::users::users_payloads::UserPayload,
+    adapters::api::users::users_payloads::UserUpdatePayload,
     application::{repositories::users_repository_abstract::UsersRepositoryAbstract, usecases::interfaces::AbstractUseCase, utils::error_handling_utils::ErrorHandlingUtils},
     domain::{error::ApiError, user_entity::UserEntity},
 };
 
 pub struct UpdateOneUserUseCase<'a> {
-    user_payload: &'a UserPayload,
+    user_payload: &'a UserUpdatePayload,
     repository: &'a dyn UsersRepositoryAbstract,
 }
 
 impl<'a> UpdateOneUserUseCase<'a> {
-    pub fn new(user_payload: &'a UserPayload, repository: &'a dyn UsersRepositoryAbstract) -> Self {
+    pub fn new(user_payload: &'a UserUpdatePayload, repository: &'a dyn UsersRepositoryAbstract) -> Self {
         UpdateOneUserUseCase { user_payload, repository }
     }
 }
@@ -34,13 +34,13 @@ mod tests {
     use super::*;
     use std::io::{Error, ErrorKind};
 
-    use crate::application::{repositories::users_repository_abstract::MockUsersRepositoryAbstract, usecases::update_one_user_usecase::UpdateOneUserUseCase};
+    use crate::application::repositories::users_repository_abstract::MockUsersRepositoryAbstract;
 
     #[actix_rt::test]
     async fn test_should_return_generic_message_when_unexpected_repo_error() {
         // given the "all user users" usecase repo with an unexpected random error
         let mut user_repository = MockUsersRepositoryAbstract::new();
-        let payload = UserPayload::new("Username 1".to_string(), "Test1@gmail.com".to_string(), "Test1234".to_string());
+        let payload = UserUpdatePayload::new(1, Some(String::from("User 1")), Some(String::from("test1@gmail.com")), Some(String::from("Test1234")));
         user_repository
             .expect_update_one_user()
             .times(1)
@@ -60,7 +60,8 @@ mod tests {
     async fn test_should_return_one_result() {
         // given the "one user user by id" usecase repo returning one result
         let mut user_repository = MockUsersRepositoryAbstract::new();
-        let payload = UserPayload::new("Username 1".to_string(), "Test1@gmail.com".to_string(), "Test1234".to_string());
+        // let payload = UserUpdatePayload::new(1, "Username 1".to_string(), "Test1@gmail.com".to_string(), "Test1234".to_string());
+        let payload = UserUpdatePayload::new(1, Some(String::from("User 1")), Some(String::from("test1@gmail.com")), Some(String::from("Test1234")));
         user_repository.expect_update_one_user().times(1).returning(|_| {
             Ok(UserEntity {
                 id: 1,
@@ -76,6 +77,6 @@ mod tests {
 
         // then assert the result is the expected entity
         assert_eq!(data.id, 1);
-        assert_eq!(data.email, "Test1@gmail.com");
+        assert_eq!(data.email, "test1@gmail.com");
     }
 }

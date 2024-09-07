@@ -42,20 +42,23 @@ impl UserLoginPayload {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct UserPayload {
+pub struct UserUpdatePayload {
     // implement for POST/UPDATE requests
-    pub username: String,
-    pub email: String,
-    pub password: String,
+    pub user_id: i32,
+    pub username: Option<String>,
+    pub email: Option<String>,
+    pub password: Option<String>,
 }
 
-impl UserPayload {
+impl UserUpdatePayload {
     pub fn new(
-        username: String, 
-        email: String, 
-        password: String, 
+        user_id: i32, 
+        username: Option<String>, 
+        email: Option<String>, 
+        password: Option<String>, 
     ) -> Self {
-        UserPayload {
+        UserUpdatePayload {
+            user_id,
             username,
             email,
             password,

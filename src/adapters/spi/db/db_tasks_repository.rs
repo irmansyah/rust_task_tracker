@@ -3,13 +3,14 @@ use diesel::prelude::*;
 use std::error::Error;
 use std::sync::Arc;
 
-use crate::adapters::api::tasks::tasks_payloads::TaskPayload;
+use crate::adapters::api::tasks::tasks_payloads::*;
 use crate::adapters::spi::db::{db_connection::DbConnection, db_mappers::TaskDbMapper, schema::tasks::dsl::*};
 use crate::application::{mappers::db_mapper::DbMapper, repositories::tasks_repository_abstract::TasksRepositoryAbstract};
-use crate::domain::task_entity::TaskEntity;
+use crate::domain::task_entity::*;
 
 use crate::adapters::spi::db::schema::tasks;
 
+use super::db_mappers::TaskAllDbMapper;
 use super::task_model::{NewTask, Task};
 
 pub struct TasksRepository {
@@ -18,10 +19,10 @@ pub struct TasksRepository {
 
 #[async_trait(?Send)]
 impl TasksRepositoryAbstract for TasksRepository {
-    async fn post_one_task(&self, task_payload: &TaskPayload) -> Result<TaskEntity, Box<dyn Error>> {
+    async fn post_one_task(&self, task_payload: &TaskCreatePayload) -> Result<TaskEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
 
-        let data_title = task_payload.title.clone().unwrap_or_default();
+        let data_title = task_payload.title.clone();
         let data_typ = task_payload.typ.clone().unwrap_or_default().to_string();
         let data_priority = task_payload.priority.clone().unwrap_or_default().to_string();
         let data_status = task_payload.status.clone().unwrap_or_default().to_string();
@@ -32,15 +33,15 @@ impl TasksRepositoryAbstract for TasksRepository {
         let data_task_list: Option<Vec<&str>> = task_payload.task_list.as_ref().map(|vec| vec.iter().map(|s| s.as_str()).collect());
 
         let new_task = NewTask {
-            title: Some(&data_title),
-            typ: Some(&data_typ),
-            priority: Some(&data_priority),
-            status: Some(&data_status),
-            description: Some(&data_description),
-            duration: Some(data_duration),
-            due_date: Some(data_due_date),
-            project_id: Some(data_project_id),
-            task_list: data_task_list,
+            title: &data_title,
+            typ: &data_typ,
+            priority: &data_priority,
+            status: &data_status,
+            description: &data_description,
+            duration: data_duration,
+            due_date: data_due_date,
+            project_id: data_project_id,
+            task_list: data_task_list.unwrap_or_default(),
         };
 
         let result = diesel::insert_into(tasks::table).values(&new_task).returning(Task::as_returning()).get_result(&mut conn);
@@ -51,7 +52,7 @@ impl TasksRepositoryAbstract for TasksRepository {
         }
     }
 
-    async fn update_one_task(&self, task_payload: &TaskPayload) -> Result<TaskEntity, Box<dyn Error>> {
+    async fn update_one_task(&self, task_payload: &TaskUpdatePayload) -> Result<TaskEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
         let data_task_list: Option<Vec<&str>> = task_payload.task_list.as_ref().map(|vec| vec.iter().map(|s| s.as_str()).collect());
         let target = tasks.filter(id.eq(task_payload.task_id));
@@ -86,12 +87,12 @@ impl TasksRepositoryAbstract for TasksRepository {
         }
     }
 
-    async fn get_all_tasks(&self) -> Result<Vec<TaskEntity>, Box<dyn Error>> {
+    async fn get_all_tasks(&self) -> Result<Vec<TaskAllEntity>, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
         let results = tasks.load::<Task>(&mut conn);
 
         match results {
-            Ok(models) => Ok(models.into_iter().map(TaskDbMapper::to_entity).collect::<Vec<TaskEntity>>()),
+            Ok(models) => Ok(models.into_iter().map(TaskAllDbMapper::to_entity).collect::<Vec<TaskAllEntity>>()),
             Err(e) => Err(Box::new(e)),
         }
     }

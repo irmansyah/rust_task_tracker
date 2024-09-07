@@ -34,7 +34,7 @@ mod tests {
     use super::*;
     use std::io::{Error, ErrorKind};
 
-    use crate::application::{repositories::users_repository_abstract::MockUsersRepositoryAbstract, usecases::register_user_usecase::RegisterUserUseCase};
+    use crate::application::repositories::users_repository_abstract::MockUsersRepositoryAbstract;
 
     #[actix_rt::test]
     async fn test_should_return_generic_message_when_unexpected_repo_error() {
@@ -60,8 +60,15 @@ mod tests {
     async fn test_should_return_one_result() {
         // given the "one user user by id" usecase repo returning one result
         let mut user_repository = MockUsersRepositoryAbstract::new();
-        let payload = UserRegisterPayload::new(String::from("user1"), String::from("test@gmail.com"), String::from("test1234"));
-        user_repository.expect_register_user().times(1).returning(|_| Ok(payload));
+        let payload = UserRegisterPayload::new(String::from("User 1"), String::from("test@gmail.com"), String::from("test1234"));
+        user_repository.expect_register_user().times(1).returning(|_| {
+            Ok(UserEntity {
+                id: 1,
+                username: String::from("Username 1"),
+                email: String::from("Test1@gmail.com"),
+                password: String::from("test1234"),
+            })
+        });
 
         // when calling usecase
         let get_one_user_by_id_usecase = RegisterUserUseCase::new(&payload, &user_repository);
@@ -69,6 +76,6 @@ mod tests {
 
         // then assert the result is the expected entity
         assert_eq!(data.id, 1);
-        assert_eq!(data.name, "user1");
+        assert_eq!(data.username, "User 1");
     }
 }

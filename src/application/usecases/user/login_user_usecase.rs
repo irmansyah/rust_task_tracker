@@ -40,7 +40,7 @@ mod tests {
     async fn test_should_return_generic_message_when_unexpected_repo_error() {
         // given the "all user users" usecase repo with an unexpected random error
         let mut user_repository = MockUsersRepositoryAbstract::new();
-        let payload = UserLoginPayload::new(String::from("user1"), String::from("test1234"));
+        let payload = UserLoginPayload::new(String::from("user1@gmail.com"), String::from("Test1234"));
         user_repository.expect_login_user().times(1).returning(|_| Err(Box::new(Error::new(ErrorKind::Other, "oh no!"))));
 
         // when calling usecase
@@ -57,8 +57,15 @@ mod tests {
     async fn test_should_return_one_result() {
         // given the "one user user by id" usecase repo returning one result
         let mut user_repository = MockUsersRepositoryAbstract::new();
-        let payload = UserLoginPayload::new(String::from("user1"), String::from("test1234"));
-        user_repository.expect_login_user().times(1).returning(|_| Ok(payload));
+        let payload = UserLoginPayload::new(String::from("user1@gmail.com"), String::from("Test1234"));
+        user_repository.expect_login_user().times(1).returning(|_| {
+            Ok(UserEntity {
+                id: 1,
+                username: String::from("User 1"),
+                email: String::from("user1@gmail.com"),
+                password: String::from("Test1234"),
+            })
+        });
 
         // when calling usecase
         let get_one_user_by_id_usecase = LoginUserUseCase::new(&payload, &user_repository);
@@ -66,6 +73,6 @@ mod tests {
 
         // then assert the result is the expected entity
         assert_eq!(data.id, 1);
-        assert_eq!(data.name, "user1");
+        assert_eq!(data.email, "user1@gmail.com");
     }
 }

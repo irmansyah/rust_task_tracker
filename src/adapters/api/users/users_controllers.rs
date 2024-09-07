@@ -1,15 +1,23 @@
 use crate::{
     adapters::api::{
         shared::{app_state::AppState, error_presenter::ErrorResponse},
-        users::{users_mappers::UserPresenterMapper, users_payloads::{UserPayload, UserRegisterPayload}, users_presenters::UserRegisterPresenter},
+        users::{
+            users_mappers::UserPresenterMapper,
+            users_payloads::{UserLoginPayload, UserRegisterPayload, UserUpdatePayload},
+            users_presenters::UserPresenter,
+        },
     },
     application::{
         mappers::api_mapper::{ApiMapper, BaseResponse},
         usecases::{
-            delete_one_user_by_id_usecase::DeleteOneUserByIdUseCase, get_all_users_usecase::GetAlluserUseCase, get_one_user_by_id_usecase::GetOneUserByIdUseCase, interfaces::AbstractUseCase, login_user_usecase::LoginUserUseCase, register_user_usecase::RegisterUserUseCase, update_one_user_usecase::UpdateOneUserUseCase
+            interfaces::AbstractUseCase,
+            user::{
+                delete_one_user_by_id_usecase::DeleteOneUserByIdUseCase, get_all_users_usecase::GetAllUsersUseCase, get_one_user_by_id_usecase::GetOneUserByIdUseCase,
+                login_user_usecase::LoginUserUseCase, register_user_usecase::RegisterUserUseCase, update_one_user_usecase::UpdateOneUserUseCase,
+            },
         },
     },
-    domain::{error::ApiError, users_entity::UserEntity},
+    domain::{error::ApiError, user_entity::UserEntity},
 };
 use actix_web::{delete, get, patch, post, web, HttpResponse};
 
@@ -25,9 +33,9 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
 #[post("/register")]
 async fn register_user(data: web::Data<AppState>, path: web::Json<UserRegisterPayload>) -> Result<HttpResponse, ErrorResponse> {
     let user_payload = path.into_inner();
-    let post_one_user_usecase = RegisterUserUseCase::new(&user_payload, &data.user_repository);
+    let register_user_usecase = RegisterUserUseCase::new(&user_payload, &data.users_repository);
 
-    match post_one_user_usecase.execute().await {
+    match register_user_usecase.execute().await {
         Ok(user) => {
             let response = BaseResponse {
                 code: 201,
@@ -41,11 +49,11 @@ async fn register_user(data: web::Data<AppState>, path: web::Json<UserRegisterPa
 }
 
 #[post("/login")]
-async fn login_user(data: web::Data<AppState>, path: web::Json<UserRegisterPayload>) -> Result<HttpResponse, ErrorResponse> {
+async fn login_user(data: web::Data<AppState>, path: web::Json<UserLoginPayload>) -> Result<HttpResponse, ErrorResponse> {
     let user_payload = path.into_inner();
-    let post_one_user_usecase = LoginUserUseCase::new(&user_payload, &data.user_repository);
+    let login_user_usecase = LoginUserUseCase::new(&user_payload, &data.users_repository);
 
-    match post_one_user_usecase.execute().await {
+    match login_user_usecase.execute().await {
         Ok(user) => {
             let response = BaseResponse {
                 code: 201,
@@ -59,9 +67,9 @@ async fn login_user(data: web::Data<AppState>, path: web::Json<UserRegisterPaylo
 }
 
 #[patch("/")]
-async fn update_one_user(data: web::Data<AppState>, path: web::Json<UserPayload>) -> Result<HttpResponse, ErrorResponse> {
+async fn update_one_user(data: web::Data<AppState>, path: web::Json<UserUpdatePayload>) -> Result<HttpResponse, ErrorResponse> {
     let user_payload = path.into_inner();
-    let update_one_user_usecase = UpdateOneUserUseCase::new(&user_payload, &data.user_repository);
+    let update_one_user_usecase = UpdateOneUserUseCase::new(&user_payload, &data.users_repository);
 
     match update_one_user_usecase.execute().await {
         Ok(user) => {
@@ -78,8 +86,8 @@ async fn update_one_user(data: web::Data<AppState>, path: web::Json<UserPayload>
 
 #[get("/")]
 async fn get_all_user(data: web::Data<AppState>) -> Result<HttpResponse, ErrorResponse> {
-    let get_all_user_usecase = GetAlluserUseCase::new(&data.user_repository);
-    let user: Result<Vec<UserEntity>, ApiError> = get_all_user_usecase.execute().await;
+    let get_all_users_usecase = GetAllUsersUseCase::new(&data.users_repository);
+    let user: Result<Vec<UserEntity>, ApiError> = get_all_users_usecase.execute().await;
 
     match user {
         Ok(user) => {
@@ -97,7 +105,7 @@ async fn get_all_user(data: web::Data<AppState>) -> Result<HttpResponse, ErrorRe
 #[get("/{user_id}")]
 async fn get_one_user_by_id(data: web::Data<AppState>, path: web::Path<(i32,)>) -> Result<HttpResponse, ErrorResponse> {
     let user_id = path.into_inner().0;
-    let get_one_user_by_id_usecase = GetOneUserByIdUseCase::new(&user_id, &data.user_repository);
+    let get_one_user_by_id_usecase = GetOneUserByIdUseCase::new(&user_id, &data.users_repository);
 
     match get_one_user_by_id_usecase.execute().await {
         Ok(user) => {
@@ -115,7 +123,7 @@ async fn get_one_user_by_id(data: web::Data<AppState>, path: web::Path<(i32,)>) 
 #[delete("/{user_id}")]
 async fn delete_one_user_by_id(data: web::Data<AppState>, path: web::Path<(i32,)>) -> Result<HttpResponse, ErrorResponse> {
     let user_id = path.into_inner().0;
-    let delete_one_user_usecase = DeleteOneUserByIdUseCase::new(&user_id, &data.user_repository);
+    let delete_one_user_usecase = DeleteOneUserByIdUseCase::new(&user_id, &data.users_repository);
 
     match delete_one_user_usecase.execute().await {
         Ok(user) => {

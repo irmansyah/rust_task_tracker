@@ -2,28 +2,28 @@
 pub struct TaskEntity {
     pub id: i32,
     pub title: String,
-    pub typ: Option<String>,
-    pub priority: Option<String>,
-    pub status: Option<String>,
-    pub description: Option<String>,
-    pub duration: Option<i32>,
-    pub due_date: Option<i64>,
-    pub project_id: Option<i32>,
-    pub task_list: Option<Vec<String>>,
+    pub typ: String,
+    pub priority: String,
+    pub status: String,
+    pub description: String,
+    pub duration: i32,
+    pub due_date: i64,
+    pub project_id: i32,
+    pub task_list: Vec<String>,
 }
 
 impl TaskEntity {
     pub fn new(
         id: i32,
         title: String,
-        typ: Option<String>,
-        priority: Option<String>,
-        status: Option<String>,
-        description: Option<String>,
-        duration: Option<i32>,
-        due_date: Option<i64>,
-        project_id: Option<i32>,
-        task_list: Option<Vec<String>>,
+        typ: String,
+        priority: String,
+        status: String,
+        description: String,
+        duration: i32,
+        due_date: i64,
+        project_id: i32,
+        task_list: Vec<String>,
     ) -> Self {
         TaskEntity {
             id,
@@ -36,6 +36,27 @@ impl TaskEntity {
             due_date,
             project_id,
             task_list,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct TaskAllEntity {
+    pub id: i32,
+    pub title: String,
+    pub description: String,
+}
+
+impl TaskAllEntity {
+    pub fn new(
+        id: i32,
+        title: String,
+        description: String,
+    ) -> Self {
+        TaskAllEntity {
+            id,
+            title,
+            description,
         }
     }
 }

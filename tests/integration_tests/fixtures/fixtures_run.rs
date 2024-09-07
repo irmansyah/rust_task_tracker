@@ -11,6 +11,6 @@ pub fn execute_imports(conn: &DbConnection) {
 fn import_task_fixtures(conn: &DbConnection) {
     let json = read_from_file::<Vec<TaskJson>>("tests/integration_tests/fixtures/tasks.json").unwrap();
 
-    let conn = conn.get_pool().get().expect("couldn't get db connection from pool");
+    let mut conn = conn.get_pool().get().expect("couldn't get db connection from pool");
     insert_into(tasks).values(&json).execute(&mut conn).unwrap();
 }

@@ -3,10 +3,7 @@ use std::{env, net::TcpListener, sync::Arc};
 use crate::adapters::{
     self,
     api::shared::app_state::AppState,
-    spi::{
-        db::{db_connection::DbConnection, db_tasks_repository::TasksRepository},
-        // http::{http_cat_facts_repository::CatFactsRepository, http_connection::HttpConnection},
-    },
+    spi::db::{db_connection::DbConnection, db_tasks_repository::TasksRepository, db_users_repository::UsersRepository},
 };
 use actix_web::{dev::Server, middleware::Logger};
 use actix_web::{web, App, HttpServer};
@@ -27,6 +24,7 @@ pub fn server(listener: TcpListener, db_name: &str) -> Result<Server, std::io::E
         //     source: dotenv::var("CATS_SOURCE").expect("CATS_SOURCE must be set"),
         // },
         // dogs_repository: DogFactsRepository { db_connection: db_connection.clone() },
+        users_repository: UsersRepository { db_connection: db_connection.clone() },
         tasks_repository: TasksRepository { db_connection: db_connection.clone() },
     });
 

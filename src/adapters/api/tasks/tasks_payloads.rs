@@ -78,7 +78,7 @@ impl fmt::Display for TaskTypePayload {
             TaskTypePayload::None => write!(f, "None"),
         }
     }
-}   
+}
 
 impl fmt::Display for TaskPriorityPayload {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -124,7 +124,46 @@ impl fmt::Display for TaskStatusInProgressPayload {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct TaskPayload {
+pub struct TaskCreatePayload {
+    pub title: String,
+    pub typ: Option<TaskTypePayload>,
+    pub priority: Option<TaskPriorityPayload>,
+    pub status: Option<TaskStatusPayload>,
+    pub description: Option<String>,
+    pub duration: Option<i32>,
+    pub due_date: Option<i64>,
+    pub project_id: Option<i32>,
+    pub task_list: Option<Vec<String>>,
+}
+
+impl TaskCreatePayload {
+    pub fn new(
+        title: String,
+        typ: Option<TaskTypePayload>,
+        priority: Option<TaskPriorityPayload>,
+        status: Option<TaskStatusPayload>,
+        description: Option<String>,
+        duration: Option<i32>,
+        due_date: Option<i64>,
+        project_id: Option<i32>,
+        task_list: Option<Vec<String>>,
+    ) -> Self {
+        TaskCreatePayload {
+            title,
+            typ,
+            priority,
+            status,
+            description,
+            duration,
+            due_date,
+            project_id,
+            task_list,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TaskUpdatePayload {
     // implement for POST/UPDATE requests
     pub task_id: i32,
     pub title: Option<String>,
@@ -138,20 +177,20 @@ pub struct TaskPayload {
     pub task_list: Option<Vec<String>>,
 }
 
-impl TaskPayload {
+impl TaskUpdatePayload {
     pub fn new(
-        task_id: i32, 
-        title: Option<String>, 
-        typ: Option<TaskTypePayload>, 
-        priority: Option<TaskPriorityPayload>, 
+        task_id: i32,
+        title: Option<String>,
+        typ: Option<TaskTypePayload>,
+        priority: Option<TaskPriorityPayload>,
         status: Option<TaskStatusPayload>,
-        description: Option<String>, 
-        duration: Option<i32>, 
-        due_date: Option<i64>, 
-        project_id: Option<i32>, 
+        description: Option<String>,
+        duration: Option<i32>,
+        due_date: Option<i64>,
+        project_id: Option<i32>,
         task_list: Option<Vec<String>>,
     ) -> Self {
-        TaskPayload {
+        TaskUpdatePayload {
             task_id,
             title,
             typ,
@@ -165,3 +204,5 @@ impl TaskPayload {
         }
     }
 }
+
+pub struct TaskPayload {}

@@ -34,7 +34,7 @@ mod tests {
     use mockall::predicate::eq;
     use std::io::{Error, ErrorKind};
 
-    use crate::{application::repositories::tasks_repository_abstract::MockTasksRepositoryAbstract, domain::task_entity::TaskEntity};
+    use crate::{adapters::api::tasks::tasks_payloads::*, application::repositories::tasks_repository_abstract::MockTasksRepositoryAbstract, domain::task_entity::TaskEntity};
 
     #[actix_rt::test]
     async fn test_should_return_error_with_generic_message_when_unexpected_repo_error() {
@@ -64,14 +64,14 @@ mod tests {
             Ok(TaskEntity {
                 id: 1,
                 title: String::from("task1"),
-                typ: todo!(),
-                priority: todo!(),
-                status: todo!(),
-                description: todo!(),
-                duration: todo!(),
-                due_date: todo!(),
-                project_id: todo!(),
-                task_list: todo!(),
+                typ: TaskTypePayload::Work.to_string(),
+                priority: TaskPriorityPayload::Low.to_string(),
+                status: TaskStatusPayload::ToDo(TaskStatusToDoPayload::NotStarted).to_string(),
+                description: String::from(""),
+                duration: 1,
+                due_date: 321472382,
+                project_id: 1,
+                task_list: [].to_vec(),
             })
         });
 

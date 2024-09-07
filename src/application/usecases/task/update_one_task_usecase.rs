@@ -1,18 +1,18 @@
 use async_trait::async_trait;
 
 use crate::{
-    adapters::api::tasks::tasks_payloads::TaskPayload,
+    adapters::api::tasks::tasks_payloads::TaskUpdatePayload,
     application::{repositories::tasks_repository_abstract::TasksRepositoryAbstract, usecases::interfaces::AbstractUseCase, utils::error_handling_utils::ErrorHandlingUtils},
     domain::{error::ApiError, task_entity::TaskEntity},
 };
 
 pub struct UpdateOneTaskUseCase<'a> {
-    task_payload: &'a TaskPayload,
+    task_payload: &'a TaskUpdatePayload,
     repository: &'a dyn TasksRepositoryAbstract,
 }
 
 impl<'a> UpdateOneTaskUseCase<'a> {
-    pub fn new(task_payload: &'a TaskPayload, repository: &'a dyn TasksRepositoryAbstract) -> Self {
+    pub fn new(task_payload: &'a TaskUpdatePayload, repository: &'a dyn TasksRepositoryAbstract) -> Self {
         UpdateOneTaskUseCase { task_payload, repository }
     }
 }
@@ -34,13 +34,24 @@ mod tests {
     use super::*;
     use std::io::{Error, ErrorKind};
 
-    use crate::application::{repositories::tasks_repository_abstract::MockTasksRepositoryAbstract, usecases::task::update_one_task_usecase::UpdateOneTaskUseCase};
+    use crate::{adapters::api::tasks::tasks_payloads::*, application::{repositories::tasks_repository_abstract::MockTasksRepositoryAbstract, usecases::task::update_one_task_usecase::UpdateOneTaskUseCase}};
 
     #[actix_rt::test]
     async fn test_should_return_generic_message_when_unexpected_repo_error() {
         // given the "all task tasks" usecase repo with an unexpected random error
         let mut task_repository = MockTasksRepositoryAbstract::new();
-        let payload = TaskPayload::new(1, "This is text task".to_string());
+        let payload = TaskUpdatePayload::new(
+            1,
+            Some(String::from("task1")),
+            Some(TaskTypePayload::Work),
+            Some(TaskPriorityPayload::Low),
+            Some(TaskStatusPayload::ToDo(TaskStatusToDoPayload::NotStarted)),
+            Some(String::from("")),
+            Some(1),
+            Some(321472382),
+            Some(1),
+            Some([].to_vec()),
+        );
         task_repository
             .expect_update_one_task()
             .times(1)
@@ -60,9 +71,30 @@ mod tests {
     async fn test_should_return_one_result() {
         // given the "one task task by id" usecase repo returning one result
         let mut task_repository = MockTasksRepositoryAbstract::new();
-        let payload = TaskPayload::new(1, "task 1".to_string());
+        let payload = TaskUpdatePayload::new(
+            1,
+            Some(String::from("task1")),
+            Some(TaskTypePayload::Work),
+            Some(TaskPriorityPayload::Low),
+            Some(TaskStatusPayload::ToDo(TaskStatusToDoPayload::NotStarted)),
+            Some(String::from("")),
+            Some(1),
+            Some(321472382),
+            Some(1),
+            Some([].to_vec()),
+        );
         task_repository.expect_update_one_task().times(1).returning(|_| {
-            Ok(TaskEntity {id:1,title:String::from("task1"), typ: todo!(), priority: todo!(), status: todo!(), description: todo!(), duration: todo!(), due_date: todo!(), project_id: todo!(), task_list: todo!() }
+            Ok(TaskEntity {
+                id: 1,
+                title: String::from("task1"),
+                typ: TaskTypePayload::Work.to_string(),
+                priority: TaskPriorityPayload::Low.to_string(),
+                status: TaskStatusPayload::ToDo(TaskStatusToDoPayload::NotStarted).to_string(),
+                description: String::from(""),
+                duration: 1,
+                due_date: 321472382,
+                project_id: 1,
+                task_list: [].to_vec(),
             })
         });
 
@@ -71,7 +103,7 @@ mod tests {
         let data = get_one_task_by_id_usecase.execute().await.unwrap();
 
         // then assert the result is the expected entity
-        assert_eq!(data.task_id, 1);
+        assert_eq!(data.id, 1);
         assert_eq!(data.title, "task1");
     }
 }

@@ -3,14 +3,14 @@ use diesel::prelude::*;
 use std::error::Error;
 use std::sync::Arc;
 
-use crate::adapters::api::users::users_payloads::{UserLoginPayload, UserPayload, UserRegisterPayload};
+use crate::adapters::api::users::users_payloads::*;
 use crate::adapters::spi::db::{db_connection::DbConnection, db_mappers::UserDbMapper, schema::users::dsl::*};
 use crate::application::{mappers::db_mapper::DbMapper, repositories::users_repository_abstract::UsersRepositoryAbstract};
 use crate::domain::user_entity::UserEntity;
 
 use crate::adapters::spi::db::schema::users;
 
-use super::user_model::{RegisterNewUser, User};
+use super::user_model::*;
 
 pub struct UsersRepository {
     pub db_connection: Arc<DbConnection>,
@@ -21,21 +21,14 @@ impl UsersRepositoryAbstract for UsersRepository {
     async fn register_user(&self, user_payload: &UserRegisterPayload) -> Result<UserEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
 
-        let data_username = user_payload.username.clone().unwrap_or_default();
-        let data_typ = user_payload.typ.clone().unwrap_or_default().to_string();
-        let data_priority = user_payload.priority.clone().unwrap_or_default().to_string();
-        let data_status = user_payload.status.clone().unwrap_or_default().to_string();
+        let data_username = user_payload.username.clone();
+        let data_email = user_payload.email.clone();
+        let data_password = user_payload.password.clone();
 
-        let new_user = NewUser {
-            title: Some(&data_title),
-            typ: Some(&data_typ),
-            priority: Some(&data_priority),
-            status: Some(&data_status),
-            description: Some(&data_description),
-            duration: Some(data_duration),
-            due_date: Some(data_due_date),
-            project_id: Some(data_project_id),
-            user_list: data_user_list,
+        let new_user = UserRegister {
+            username: &data_username,
+            email: &data_email,
+            password: &data_password,
         };
 
         let result = diesel::insert_into(users::table).values(&new_user).returning(User::as_returning()).get_result(&mut conn);
@@ -49,23 +42,15 @@ impl UsersRepositoryAbstract for UsersRepository {
     async fn login_user(&self, user_payload: &UserLoginPayload) -> Result<UserEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
 
-        let data_username = user_payload.username.clone().unwrap_or_default();
-        let data_email = user_payload.email.clone().unwrap_or_default().to_string();
-        let data_password = user_payload.password.clone().unwrap_or_default().to_string();
+        let data_email = user_payload.email.clone();
+        let data_password = user_payload.password.clone();
 
-        let new_user = NewUser {
-            title: Some(&data_title),
-            typ: Some(&data_typ),
-            priority: Some(&data_priority),
-            status: Some(&data_status),
-            description: Some(&data_description),
-            duration: Some(data_duration),
-            due_date: Some(data_due_date),
-            project_id: Some(data_project_id),
-            user_list: data_user_list,
+        let user = UserLogin {
+            email: &data_email,
+            password: &data_password,
         };
 
-        let result = diesel::insert_into(users::table).values(&new_user).returning(User::as_returning()).get_result(&mut conn);
+        let result = diesel::insert_into(users::table).values(&user).returning(User::as_returning()).get_result(&mut conn);
 
         match result {
             Ok(model) => Ok(UserDbMapper::to_entity(model)),
@@ -73,21 +58,12 @@ impl UsersRepositoryAbstract for UsersRepository {
         }
     }
 
-    async fn update_one_user(&self, user_payload: &UserPayload) -> Result<UserEntity, Box<dyn Error>> {
+    async fn update_one_user(&self, user_payload: &UserUpdatePayload) -> Result<UserEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
-        let data_user_list: Option<Vec<&str>> = user_payload.user_list.as_ref().map(|vec| vec.iter().map(|s| s.as_str()).collect());
         let target = users.filter(id.eq(user_payload.user_id));
         let result = diesel::update(target)
             .set((
-                user_payload.title.clone().map(|data| title.eq(data)),
-                user_payload.typ.clone().map(|data| typ.eq(data.to_string())),
-                user_payload.priority.clone().map(|data| priority.eq(data.to_string())),
-                user_payload.status.clone().map(|data| priority.eq(data.to_string())),
-                user_payload.description.clone().map(|data| description.eq(data)),
-                user_payload.duration.map(|data| duration.eq(data)),
-                user_payload.due_date.map(|data| due_date.eq(data)),
-                user_payload.project_id.map(|data| project_id.eq(data)),
-                data_user_list.map(|data| user_list.eq(data)),
+                user_payload.username.clone().map(|data| username.eq(data.to_string())),
             ))
             .returning(User::as_returning())
             .get_result(&mut conn);

@@ -21,6 +21,13 @@ pub struct UserRegister<'a> {
 
 #[derive(Insertable, AsChangeset)]
 #[diesel(table_name = users)]
+pub struct UserLogin<'a> {
+    pub email: &'a str,
+    pub password: &'a str,
+}
+
+#[derive(Insertable, AsChangeset)]
+#[diesel(table_name = users)]
 pub struct UserUpdate<'a> {
     pub username: &'a str,
     pub password: &'a str,
