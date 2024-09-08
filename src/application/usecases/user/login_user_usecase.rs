@@ -34,7 +34,7 @@ mod tests {
     use super::*;
     use std::io::{Error, ErrorKind};
 
-    use crate::{adapters::api::users::users_payloads::UserLoginPayload, application::repositories::users_repository_abstract::MockUsersRepositoryAbstract};
+    use crate::{adapters::api::users::users_payloads::{UserLoginPayload, UserRolePayload}, application::repositories::users_repository_abstract::MockUsersRepositoryAbstract};
 
     #[actix_rt::test]
     async fn test_should_return_generic_message_when_unexpected_repo_error() {
@@ -60,10 +60,13 @@ mod tests {
         let payload = UserLoginPayload::new(String::from("user1@gmail.com"), String::from("Test1234"));
         user_repository.expect_login_user().times(1).returning(|_| {
             Ok(UserEntity {
-                id: 1,
-                username: String::from("User 1"),
-                email: String::from("user1@gmail.com"),
-                password: String::from("Test1234"),
+                id: String::from("id1"),
+                username: String::from("Username 1"),
+                email: String::from("test1@gmail.com"),
+                password: String::from("test1234"),
+                role: UserRolePayload::User.to_string(), 
+                updated_at: todo!(), 
+                created_at: todo!() 
             })
         });
 
@@ -72,7 +75,7 @@ mod tests {
         let data = get_one_user_by_id_usecase.execute().await.unwrap();
 
         // then assert the result is the expected entity
-        assert_eq!(data.id, 1);
+        assert_eq!(data.id, String::from("id1"));
         assert_eq!(data.email, "user1@gmail.com");
     }
 }

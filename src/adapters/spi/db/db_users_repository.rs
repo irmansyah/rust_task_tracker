@@ -2,6 +2,7 @@ use async_trait::async_trait;
 use diesel::prelude::*;
 use std::error::Error;
 use std::sync::Arc;
+use uuid::Uuid;
 
 use crate::adapters::api::users::users_payloads::*;
 use crate::adapters::spi::db::{db_connection::DbConnection, db_mappers::UserDbMapper, schema::users::dsl::*};
@@ -25,10 +26,10 @@ impl UsersRepositoryAbstract for UsersRepository {
         let data_email = user_payload.email.clone();
         let data_password = user_payload.password.clone();
 
-        let new_user = UserRegister {
+        let new_user = UserNew {
             username: &data_username,
             email: &data_email,
-            password: &data_password,
+            password_hash: &data_password,
         };
 
         let result = diesel::insert_into(users::table).values(&new_user).returning(User::as_returning()).get_result(&mut conn);
@@ -47,7 +48,7 @@ impl UsersRepositoryAbstract for UsersRepository {
 
         let user = UserLogin {
             email: &data_email,
-            password: &data_password,
+            password_hash: &data_password,
         };
 
         let result = diesel::insert_into(users::table).values(&user).returning(User::as_returning()).get_result(&mut conn);
@@ -60,10 +61,12 @@ impl UsersRepositoryAbstract for UsersRepository {
 
     async fn update_one_user(&self, user_payload: &UserUpdatePayload) -> Result<UserEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
-        let target = users.filter(id.eq(user_payload.user_id));
+        let user_id = Uuid::parse_str(&user_payload.user_id).unwrap();
+        let target = users.filter(id.eq(user_id));
         let result = diesel::update(target)
             .set((
                 user_payload.username.clone().map(|data| username.eq(data.to_string())),
+                // user_payload.update_at.clone().map(|data| username.eq(data.to_string())),
             ))
             .returning(User::as_returning())
             .get_result(&mut conn);
@@ -74,8 +77,9 @@ impl UsersRepositoryAbstract for UsersRepository {
         }
     }
 
-    async fn get_user_by_id(&self, user_id: i32) -> Result<UserEntity, Box<dyn Error>> {
+    async fn get_user_by_id(&self, user_id: &String) -> Result<UserEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
+        let user_id = Uuid::parse_str(&user_id).unwrap();
         let result = users.filter(id.eq(user_id)).get_result::<User>(&mut conn);
 
         match result {
@@ -84,8 +88,9 @@ impl UsersRepositoryAbstract for UsersRepository {
         }
     }
 
-    async fn delete_user_by_id(&self, user_id: i32) -> Result<UserEntity, Box<dyn Error>> {
+    async fn delete_user_by_id(&self, user_id: &String) -> Result<UserEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
+        let user_id = Uuid::parse_str(&user_id).unwrap();
         let target_user = users::table.filter(users::id.eq(user_id));
         let result = diesel::delete(target_user).get_result::<User>(&mut conn);
 

@@ -103,7 +103,7 @@ async fn get_all_user(data: web::Data<AppState>) -> Result<HttpResponse, ErrorRe
 }
 
 #[get("/{user_id}")]
-async fn get_one_user_by_id(data: web::Data<AppState>, path: web::Path<(i32,)>) -> Result<HttpResponse, ErrorResponse> {
+async fn get_one_user_by_id(data: web::Data<AppState>, path: web::Path<(String,)>) -> Result<HttpResponse, ErrorResponse> {
     let user_id = path.into_inner().0;
     let get_one_user_by_id_usecase = GetOneUserByIdUseCase::new(&user_id, &data.users_repository);
 
@@ -121,7 +121,7 @@ async fn get_one_user_by_id(data: web::Data<AppState>, path: web::Path<(i32,)>) 
 }
 
 #[delete("/{user_id}")]
-async fn delete_one_user_by_id(data: web::Data<AppState>, path: web::Path<(i32,)>) -> Result<HttpResponse, ErrorResponse> {
+async fn delete_one_user_by_id(data: web::Data<AppState>, path: web::Path<(String,)>) -> Result<HttpResponse, ErrorResponse> {
     let user_id = path.into_inner().0;
     let delete_one_user_usecase = DeleteOneUserByIdUseCase::new(&user_id, &data.users_repository);
 

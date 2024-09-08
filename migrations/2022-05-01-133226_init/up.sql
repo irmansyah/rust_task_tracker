@@ -1,6 +1,6 @@
 CREATE TABLE "tasks" (
     id SERIAL PRIMARY KEY,
-    title VARCHAR,
+    title TEXT,
     typ TEXT,
     priority TEXT,
     status TEXT,

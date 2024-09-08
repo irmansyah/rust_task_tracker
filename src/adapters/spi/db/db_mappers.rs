@@ -1,3 +1,5 @@
+use uuid::Uuid;
+
 use crate::application::mappers::db_mapper::DbMapper;
 use crate::domain::task_entity::*;
 use crate::domain::user_entity::*;
@@ -71,19 +73,25 @@ impl DbMapper<TaskAllEntity, Task> for TaskAllDbMapper {
 impl DbMapper<UserEntity, User> for UserDbMapper {
     fn to_db(entity: UserEntity) -> User {
         User {
-            id: entity.id,
+            id: Uuid::parse_str(&entity.id).unwrap(),
             username: entity.username,
             email: entity.email,
-            password: entity.password,
+            password_hash: entity.password,
+            role: entity.role,
+            updated_at: entity.updated_at,
+            created_at: entity.created_at,
         }
     }
 
     fn to_entity(model: User) -> UserEntity {
         UserEntity {
-            id: model.id.to_owned(),
+            id: model.id.to_string(),
             username: model.username,
             email: model.email,
-            password: model.password,
+            password: model.password_hash,
+            role: model.role,
+            updated_at: model.updated_at,
+            created_at: model.created_at,
         }
     }
 }

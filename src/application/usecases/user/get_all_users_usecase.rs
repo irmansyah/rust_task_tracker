@@ -32,7 +32,7 @@ mod tests {
     use super::*;
     use std::io::{Error, ErrorKind};
 
-    use crate::{application::repositories::users_repository_abstract::MockUsersRepositoryAbstract, domain::user_entity::UserEntity};
+    use crate::{adapters::api::users::users_payloads::UserRolePayload, application::repositories::users_repository_abstract::MockUsersRepositoryAbstract, domain::user_entity::UserEntity};
 
     #[actix_rt::test]
     async fn test_should_return_error_with_generic_message_when_unexpected_repo_error() {
@@ -51,7 +51,7 @@ mod tests {
         // then exception
         assert!(data.is_err());
         let result = data.unwrap_err();
-        assert_eq!("Cannot get all dog users", result.message);
+        assert_eq!("Cannot get all users", result.message);
     }
 
     #[actix_rt::test]
@@ -75,16 +75,22 @@ mod tests {
         user_repository.expect_get_all_users().with().times(1).returning(|| {
             Ok(vec![
                 UserEntity {
-                    id: 1,
-                    username: String::from("user1"),
+                    id: String::from("id1"),
+                    username: String::from("Username 1"),
                     email: String::from("test1@gmail.com"),
-                    password: String::from("Test1234"),
+                    password: String::from("test1234"),
+                    role: UserRolePayload::User.to_string(),
+                    updated_at: todo!(),
+                    created_at: todo!(),
                 },
                 UserEntity {
-                    id: 2,
-                    username: String::from("user2"),
-                    email: String::from("test2@gmail.com"),
-                    password: String::from("Test1234"),
+                    id: String::from("id1"),
+                    username: String::from("Username 1"),
+                    email: String::from("test1@gmail.com"),
+                    password: String::from("test1234"),
+                    role: UserRolePayload::User.to_string(),
+                    updated_at: todo!(),
+                    created_at: todo!(),
                 },
             ])
         });

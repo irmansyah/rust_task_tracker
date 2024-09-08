@@ -1,11 +1,37 @@
 use serde::{Deserialize, Serialize};
 
+use std::fmt;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum UserRolePayload {
+    SuperAdmin,
+    Admin,
+    User
+}
+
+impl Default for UserRolePayload {
+    fn default() -> Self {
+        UserRolePayload::User
+    }
+}
+
+impl fmt::Display for UserRolePayload {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            UserRolePayload::SuperAdmin => write!(f, "super_admin"),
+            UserRolePayload::Admin => write!(f, "admin"),
+            UserRolePayload::User => write!(f, "user"),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserRegisterPayload {
     // implement for POST/UPDATE requests
     pub username: String,
     pub email: String,
     pub password: String,
+    pub role: Option<UserRolePayload>,
 }
 
 impl UserRegisterPayload {
@@ -13,11 +39,13 @@ impl UserRegisterPayload {
         username: String, 
         email: String, 
         password: String, 
+        role: Option<UserRolePayload>, 
     ) -> Self {
         UserRegisterPayload {
             username,
             email,
             password,
+            role,
         }
     }
 }
@@ -44,24 +72,27 @@ impl UserLoginPayload {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserUpdatePayload {
     // implement for POST/UPDATE requests
-    pub user_id: i32,
+    pub user_id: String,
     pub username: Option<String>,
     pub email: Option<String>,
     pub password: Option<String>,
+    pub role: Option<UserRolePayload>,
 }
 
 impl UserUpdatePayload {
     pub fn new(
-        user_id: i32, 
+        user_id: String, 
         username: Option<String>, 
         email: Option<String>, 
         password: Option<String>, 
+        role: Option<UserRolePayload>, 
     ) -> Self {
         UserUpdatePayload {
             user_id,
             username,
             email,
             password,
+            role,
         }
     }
 }

@@ -1,49 +1,22 @@
 diesel::table! {
     users (id) {
-        id -> Int4,
-        username -> Varchar,
-        email -> Varchar,
-        password -> Varchar,
+        id -> Uuid,
+        username -> Text,
+        email -> Text,
+        password_hash -> Text,
+        role -> Text,
+        updated_at -> Timestamp,
+        created_at -> Timestamp,
     }
 }
 
 diesel::table! {
     projects (id) {
         id -> Int4,
-        name -> Varchar,
-        description -> Nullable<Varchar>,
+        name -> Text,
+        description -> Nullable<Text>,
     }
 }
-
-// diesel::table! {
-//     tasks (id) {
-//         id -> Int4,
-//         title -> Nullable<Varchar>,
-//         typ -> Nullable<Text>,
-//         priority -> Nullable<Text>,
-//         status -> Nullable<Text>,
-//         description -> Nullable<Text>,
-//         duration -> Nullable<Int4>,
-//         due_date -> Nullable<BigInt>,
-//         project_id -> Nullable<Int4>,
-//         task_list ->  Nullable<Array<Text>>,
-//     }
-// }
-
-// diesel::table! {
-//     tasks (id) {
-//         id -> Int4,
-//         title -> Text,
-//         typ -> Text,
-//         priority -> Text,
-//         status -> Text,
-//         description -> Text,
-//         duration -> Int4,
-//         due_date -> BigInt,
-//         project_id -> Int4,
-//         task_list ->  Array<Text>,
-//     }
-// }
 
 diesel::table! {
     tasks (id) {

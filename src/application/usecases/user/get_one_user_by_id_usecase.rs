@@ -6,12 +6,12 @@ use crate::{
 };
 
 pub struct GetOneUserByIdUseCase<'a> {
-    user_id: &'a i32,
+    user_id: &'a String,
     repository: &'a dyn UsersRepositoryAbstract,
 }
 
 impl<'a> GetOneUserByIdUseCase<'a> {
-    pub fn new(user_id: &'a i32, repository: &'a dyn UsersRepositoryAbstract) -> Self {
+    pub fn new(user_id: &'a String, repository: &'a dyn UsersRepositoryAbstract) -> Self {
         GetOneUserByIdUseCase { user_id, repository }
     }
 }
@@ -19,7 +19,7 @@ impl<'a> GetOneUserByIdUseCase<'a> {
 #[async_trait(?Send)]
 impl<'a> AbstractUseCase<UserEntity> for GetOneUserByIdUseCase<'a> {
     async fn execute(&self) -> Result<UserEntity, ApiError> {
-        let user = self.repository.get_user_by_id(*self.user_id).await;
+        let user = self.repository.get_user_by_id(&self.user_id).await;
 
         match user {
             Ok(user) => Ok(user),
@@ -42,12 +42,12 @@ mod tests {
         let mut user_repository = MockUsersRepositoryAbstract::new();
         user_repository
             .expect_get_user_by_id()
-            .with(eq(1))
+            .with(eq(1.to_string()))
             .times(1)
             .returning(|_| Err(Box::new(Error::new(ErrorKind::Other, "oh no!"))));
 
         // when calling usecase
-        let get_one_user_by_id_usecase = GetOneUserByIdUseCase::new(&1, &user_repository);
+        let get_one_user_by_id_usecase = GetOneUserByIdUseCase::new(&"1".to_string(), &user_repository);
         let data = get_one_user_by_id_usecase.execute().await;
 
         // then exception
@@ -60,21 +60,24 @@ mod tests {
     async fn test_should_return_one_result() {
         // given the "one user by id" usecase repo returning one result
         let mut user_repository = MockUsersRepositoryAbstract::new();
-        user_repository.expect_get_user_by_id().with(eq(1)).times(1).returning(|_| {
+        user_repository.expect_get_user_by_id().with(eq(String::from('1'))).times(1).returning(|_| {
             Ok(UserEntity {
-                id: 1,
-                username: String::from("User 1"),
-                email: String::from("user1@gmail.com"),
+                id: String::from("userid1"),
+                username: String::from("user1"),
+                email: String::from("test1@gmail.com"),
                 password: String::from("Test1234"),
+                role: UserRolePayload::User.to_string(),
+                updated_at: todo!(),
+                created_at: todo!(),
             })
         });
 
         // when calling usecase
-        let get_one_user_by_id_usecase = GetOneUserByIdUseCase::new(&1, &user_repository);
+        let get_one_user_by_id_usecase = GetOneUserByIdUseCase::new(&"userid1".to_string(), &user_repository);
         let data = get_one_user_by_id_usecase.execute().await.unwrap();
 
         // then assert the result is the expected entity
-        assert_eq!(data.id, 1);
+        assert_eq!(data.id, String::from("userid1"));
         assert_eq!(data.username, "User 1");
     }
 }

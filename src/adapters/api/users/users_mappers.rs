@@ -15,6 +15,7 @@ impl ApiMapper<UserEntity, UserPresenter, UserRegisterPayload> for UserPresenter
             username: entity.username,
             email: entity.email,
             password: entity.password,
+            role: entity.role,
         }
     }
 
