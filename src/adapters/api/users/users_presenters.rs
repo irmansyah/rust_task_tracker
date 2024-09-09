@@ -7,6 +7,6 @@ pub struct UserPresenter {
     pub email: String,
     pub role: String,
     pub password: String,
-    pub updated_at: String,
-    pub created_at: String,
+    pub updated_at: i64,
+    pub created_at: i64,
 }

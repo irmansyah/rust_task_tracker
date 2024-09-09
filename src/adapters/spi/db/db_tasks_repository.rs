@@ -8,10 +8,10 @@ use crate::application::mappers::db_mapper::DbMapper;
 use crate::domain::task_entity::*;
 use crate::{adapters::api::tasks::tasks_payloads::*, application::repositories::tasks_repository_abstract::TasksRepositoryAbstract};
 
-use crate::adapters::spi::db::{db_connection::DbConnection, schema::tasks::dsl::*};
 use super::db_tasks_mappers::{TaskAllDbMapper, TaskDbMapper};
 use super::schema::tasks::{self, *};
 use super::task_model::*;
+use crate::adapters::spi::db::{db_connection::DbConnection, schema::tasks::dsl::*};
 
 pub struct TasksRepository {
     pub db_connection: Arc<DbConnection>,
@@ -54,9 +54,9 @@ impl TasksRepositoryAbstract for TasksRepository {
 
     async fn update_one_task(&self, task_payload: &TaskUpdatePayload) -> Result<TaskEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
-        let data_task_list: Option<Vec<&str>> = task_payload.task_list.as_ref().map(|vec| vec.iter().map(|s| s.as_str()).collect());
         let task_id = Uuid::parse_str(&task_payload.task_id).unwrap();
         let target = tasks.filter(id.eq(task_id));
+        let data_task_list: Option<Vec<&str>> = task_payload.task_list.as_ref().map(|vec| vec.iter().map(|s| s.as_str()).collect());
 
         let result = diesel::update(target)
             .set((

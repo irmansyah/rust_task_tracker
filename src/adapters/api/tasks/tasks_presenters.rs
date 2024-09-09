@@ -12,8 +12,8 @@ pub struct TaskPresenter {
     pub due_date: i64,
     pub project_id: i32,
     pub task_list: Vec<String>,
-    pub updated_at: String,
-    pub created_at: String,
+    pub updated_at: i64,
+    pub created_at: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -21,6 +21,6 @@ pub struct TaskAllPresenter {
     pub task_id: String,
     pub title: String,
     pub description: String,
-    pub updated_at: String,
-    pub created_at: String,
+    pub updated_at: i64,
+    pub created_at: i64,
 }

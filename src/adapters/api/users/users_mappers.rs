@@ -1,3 +1,5 @@
+use chrono::NaiveDateTime;
+
 use crate::application::mappers::api_mapper::ApiMapper;
 use crate::domain::user_entity::UserEntity;
 
@@ -16,12 +18,18 @@ impl ApiMapper<UserEntity, UserPresenter, UserRegisterPayload> for UserPresenter
             email: entity.email,
             password: entity.password,
             role: entity.role,
-            updated_at: entity.updated_at.to_string(),
-            created_at: entity.created_at.to_string(),
+            updated_at: naive_datetime_to_unixtimemillis(entity.updated_at),
+            created_at: naive_datetime_to_unixtimemillis(entity.created_at),
         }
     }
 
     fn to_entity(_payload: UserRegisterPayload) -> UserEntity {
         panic!("not implemented");
     }
+}
+
+fn naive_datetime_to_unixtimemillis(datetime: NaiveDateTime) -> i64 {
+    // Get the Unix timestamp in seconds and convert to milliseconds
+    let millis = datetime.and_utc().timestamp_millis();
+    millis
 }

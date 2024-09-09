@@ -1,3 +1,5 @@
+use chrono::NaiveDateTime;
+
 use crate::adapters::{api::tasks::tasks_payloads::TaskCreatePayload, api::tasks::tasks_presenters::TaskPresenter};
 use crate::application::mappers::api_mapper::ApiMapper;
 use crate::domain::task_entity::*;
@@ -26,8 +28,8 @@ impl ApiMapper<TaskEntity, TaskPresenter, TaskIdPayload> for TaskPresenterMapper
             due_date: entity.due_date,
             project_id: entity.project_id,
             task_list: entity.task_list,
-            updated_at: entity.updated_at.to_string(),
-            created_at: entity.created_at.to_string(),
+            updated_at: naive_datetime_to_unixtimemillis(entity.updated_at),
+            created_at: naive_datetime_to_unixtimemillis(entity.created_at),
         }
     }
 
@@ -35,7 +37,6 @@ impl ApiMapper<TaskEntity, TaskPresenter, TaskIdPayload> for TaskPresenterMapper
         panic!("not implemented");
     }
 }
-
 
 impl ApiMapper<TaskEntity, TaskPresenter, TaskCreatePayload> for TaskCreatePresenterMapper {
     fn to_api(entity: TaskEntity) -> TaskPresenter {
@@ -50,8 +51,8 @@ impl ApiMapper<TaskEntity, TaskPresenter, TaskCreatePayload> for TaskCreatePrese
             due_date: entity.due_date,
             project_id: entity.project_id,
             task_list: entity.task_list,
-            updated_at: entity.updated_at.to_string(),
-            created_at: entity.created_at.to_string(),
+            updated_at: naive_datetime_to_unixtimemillis(entity.updated_at),
+            created_at: naive_datetime_to_unixtimemillis(entity.created_at),
         }
     }
 
@@ -73,8 +74,8 @@ impl ApiMapper<TaskEntity, TaskPresenter, TaskUpdatePayload> for TaskUpdatePrese
             due_date: entity.due_date,
             project_id: entity.project_id,
             task_list: entity.task_list,
-            updated_at: entity.updated_at.to_string(),
-            created_at: entity.created_at.to_string(),
+            updated_at: naive_datetime_to_unixtimemillis(entity.updated_at),
+            created_at: naive_datetime_to_unixtimemillis(entity.created_at),
         }
     }
 
@@ -89,12 +90,18 @@ impl ApiMapper<TaskAllEntity, TaskAllPresenter, TaskPayload> for TaskAllPresente
             task_id: entity.id,
             title: entity.title,
             description: entity.description,
-            updated_at: entity.updated_at.to_string(),
-            created_at: entity.created_at.to_string(),
+            updated_at: naive_datetime_to_unixtimemillis(entity.updated_at),
+            created_at: naive_datetime_to_unixtimemillis(entity.created_at),
         }
     }
 
     fn to_entity(_payload: TaskPayload) -> TaskAllEntity {
         panic!("not implemented");
     }
+}
+
+fn naive_datetime_to_unixtimemillis(datetime: NaiveDateTime) -> i64 {
+    // Get the Unix timestamp in seconds and convert to milliseconds
+    let millis = datetime.and_utc().timestamp_millis();
+    millis
 }
