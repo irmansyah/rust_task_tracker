@@ -34,7 +34,7 @@ mod tests {
     use mockall::predicate::eq;
     use std::io::{Error, ErrorKind};
 
-    use crate::{application::repositories::users_repository_abstract::MockUsersRepositoryAbstract, domain::user_entity::UserEntity};
+    use crate::{adapters::api::users::users_payloads::UserRolePayload, application::repositories::users_repository_abstract::MockUsersRepositoryAbstract, domain::user_entity::UserEntity};
 
     #[actix_rt::test]
     async fn test_should_return_error_with_generic_message_when_unexpected_repo_error() {

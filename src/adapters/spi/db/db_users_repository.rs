@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use chrono::Utc;
 use diesel::prelude::*;
 use std::error::Error;
 use std::sync::Arc;
@@ -25,11 +26,13 @@ impl UsersRepositoryAbstract for UsersRepository {
         let data_username = user_payload.username.clone();
         let data_email = user_payload.email.clone();
         let data_password = user_payload.password.clone();
+        let data_role = user_payload.role.clone().unwrap_or_default().to_string();
 
-        let new_user = UserNew {
+        let new_user = UserRegister {
             username: &data_username,
             email: &data_email,
             password_hash: &data_password,
+            role: &data_role,
         };
 
         let result = diesel::insert_into(users::table).values(&new_user).returning(User::as_returning()).get_result(&mut conn);
@@ -63,10 +66,13 @@ impl UsersRepositoryAbstract for UsersRepository {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
         let user_id = Uuid::parse_str(&user_payload.user_id).unwrap();
         let target = users.filter(id.eq(user_id));
+
         let result = diesel::update(target)
             .set((
                 user_payload.username.clone().map(|data| username.eq(data.to_string())),
-                // user_payload.update_at.clone().map(|data| username.eq(data.to_string())),
+                user_payload.password.clone().map(|data| password_hash.eq(data.to_string())),
+                user_payload.role.clone().map(|data| role.eq(data.to_string())),
+                updated_at.eq(Utc::now().naive_utc().clone()),
             ))
             .returning(User::as_returning())
             .get_result(&mut conn);

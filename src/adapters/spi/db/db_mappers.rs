@@ -73,13 +73,13 @@ impl DbMapper<TaskAllEntity, Task> for TaskAllDbMapper {
 impl DbMapper<UserEntity, User> for UserDbMapper {
     fn to_db(entity: UserEntity) -> User {
         User {
-            id: Uuid::parse_str(&entity.id).unwrap(),
+            id: Uuid::parse_str(&entity.id).unwrap_or_default(),
             username: entity.username,
             email: entity.email,
             password_hash: entity.password,
             role: entity.role,
-            updated_at: entity.updated_at,
-            created_at: entity.created_at,
+            updated_at: todo!(),
+            created_at: todo!(),
         }
     }
 

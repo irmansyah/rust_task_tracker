@@ -1,8 +1,10 @@
+use chrono::{NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use std::fmt;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "snake_case")]
 pub enum UserRolePayload {
     SuperAdmin,
     Admin,
@@ -27,7 +29,6 @@ impl fmt::Display for UserRolePayload {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserRegisterPayload {
-    // implement for POST/UPDATE requests
     pub username: String,
     pub email: String,
     pub password: String,
@@ -52,7 +53,6 @@ impl UserRegisterPayload {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserLoginPayload {
-    // implement for POST/UPDATE requests
     pub email: String,
     pub password: String,
 }
@@ -71,12 +71,12 @@ impl UserLoginPayload {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserUpdatePayload {
-    // implement for POST/UPDATE requests
     pub user_id: String,
     pub username: Option<String>,
     pub email: Option<String>,
     pub password: Option<String>,
     pub role: Option<UserRolePayload>,
+    // pub updated_at: NaiveDateTime,
 }
 
 impl UserUpdatePayload {
@@ -93,6 +93,7 @@ impl UserUpdatePayload {
             email,
             password,
             role,
+            // updated_at: Utc::now().naive_utc(),
         }
     }
 }

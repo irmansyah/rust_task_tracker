@@ -3,8 +3,8 @@ use diesel::prelude::*;
 use uuid::Uuid;
 use chrono::NaiveDateTime;
 
-// #[derive(Queryable, Identifiable, Selectable]
 #[derive(Queryable, Insertable, Selectable, AsChangeset, QueryableByName)]
+// #[derive(Queryable, Selectable, AsChangeset)]
 #[diesel(table_name = users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
@@ -19,10 +19,11 @@ pub struct User {
 
 #[derive(Insertable, AsChangeset)]
 #[diesel(table_name = users)]
-pub struct UserNew<'a> {
+pub struct UserRegister<'a> {
     pub username: &'a str,
     pub email: &'a str,
     pub password_hash: &'a str,
+    pub role: &'a str,
 }
 
 #[derive(Insertable, AsChangeset)]
