@@ -1,4 +1,3 @@
-use chrono::{NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use std::fmt;
@@ -23,6 +22,21 @@ impl fmt::Display for UserRolePayload {
             UserRolePayload::SuperAdmin => write!(f, "super_admin"),
             UserRolePayload::Admin => write!(f, "admin"),
             UserRolePayload::User => write!(f, "user"),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserIdPayload {
+    pub user_id: String,
+}
+
+impl UserIdPayload {
+    pub fn new(
+        user_id: String, 
+    ) -> Self {
+        UserIdPayload {
+            user_id,
         }
     }
 }
@@ -93,7 +107,6 @@ impl UserUpdatePayload {
             email,
             password,
             role,
-            // updated_at: Utc::now().naive_utc(),
         }
     }
 }

@@ -2,16 +2,16 @@ use async_trait::async_trait;
 use diesel::prelude::*;
 use std::error::Error;
 use std::sync::Arc;
+use uuid::Uuid;
 
-use crate::adapters::api::tasks::tasks_payloads::*;
-use crate::adapters::spi::db::{db_connection::DbConnection, db_mappers::TaskDbMapper, schema::tasks::dsl::*};
-use crate::application::{mappers::db_mapper::DbMapper, repositories::tasks_repository_abstract::TasksRepositoryAbstract};
+use crate::application::mappers::db_mapper::DbMapper;
 use crate::domain::task_entity::*;
+use crate::{adapters::api::tasks::tasks_payloads::*, application::repositories::tasks_repository_abstract::TasksRepositoryAbstract};
 
-use crate::adapters::spi::db::schema::tasks;
-
-use super::db_mappers::TaskAllDbMapper;
-use super::task_model::{NewTask, Task};
+use crate::adapters::spi::db::{db_connection::DbConnection, schema::tasks::dsl::*};
+use super::db_tasks_mappers::{TaskAllDbMapper, TaskDbMapper};
+use super::schema::tasks::{self, *};
+use super::task_model::*;
 
 pub struct TasksRepository {
     pub db_connection: Arc<DbConnection>,
@@ -32,7 +32,7 @@ impl TasksRepositoryAbstract for TasksRepository {
         let data_project_id = task_payload.project_id.unwrap_or_default();
         let data_task_list: Option<Vec<&str>> = task_payload.task_list.as_ref().map(|vec| vec.iter().map(|s| s.as_str()).collect());
 
-        let new_task = NewTask {
+        let new_task = TaskNew {
             title: &data_title,
             typ: &data_typ,
             priority: &data_priority,
@@ -55,7 +55,9 @@ impl TasksRepositoryAbstract for TasksRepository {
     async fn update_one_task(&self, task_payload: &TaskUpdatePayload) -> Result<TaskEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
         let data_task_list: Option<Vec<&str>> = task_payload.task_list.as_ref().map(|vec| vec.iter().map(|s| s.as_str()).collect());
-        let target = tasks.filter(id.eq(task_payload.task_id));
+        let task_id = Uuid::parse_str(&task_payload.task_id).unwrap();
+        let target = tasks.filter(id.eq(task_id));
+
         let result = diesel::update(target)
             .set((
                 task_payload.title.clone().map(|data| title.eq(data)),
@@ -77,16 +79,6 @@ impl TasksRepositoryAbstract for TasksRepository {
         }
     }
 
-    async fn get_task_by_id(&self, task_id: i32) -> Result<TaskEntity, Box<dyn Error>> {
-        let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
-        let result = tasks.filter(id.eq(task_id)).get_result::<Task>(&mut conn);
-
-        match result {
-            Ok(model) => Ok(TaskDbMapper::to_entity(model)),
-            Err(e) => Err(Box::new(e)),
-        }
-    }
-
     async fn get_all_tasks(&self) -> Result<Vec<TaskAllEntity>, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
         let results = tasks.load::<Task>(&mut conn);
@@ -97,10 +89,22 @@ impl TasksRepositoryAbstract for TasksRepository {
         }
     }
 
-    async fn delete_task_by_id(&self, task_id: i32) -> Result<TaskEntity, Box<dyn Error>> {
+    async fn get_task_by_id(&self, task_payload: &TaskIdPayload) -> Result<TaskEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
-        let target_task = tasks::table.filter(tasks::id.eq(task_id));
-        let result = diesel::delete(target_task).get_result::<Task>(&mut conn);
+        let task_id = Uuid::parse_str(&task_payload.task_id).unwrap();
+        let result = tasks.filter(id.eq(task_id)).get_result::<Task>(&mut conn);
+
+        match result {
+            Ok(model) => Ok(TaskDbMapper::to_entity(model)),
+            Err(e) => Err(Box::new(e)),
+        }
+    }
+
+    async fn delete_task_by_id(&self, task_payload: &TaskIdPayload) -> Result<TaskEntity, Box<dyn Error>> {
+        let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
+        let task_id = Uuid::parse_str(&task_payload.task_id).unwrap();
+        let target = tasks.filter(id.eq(task_id));
+        let result = diesel::delete(target).get_result::<Task>(&mut conn);
 
         match result {
             Ok(model) => Ok(TaskDbMapper::to_entity(model)),

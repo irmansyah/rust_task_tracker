@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TaskPresenter {
-    pub task_id: i32,
+    pub task_id: String,
     pub title: String,
     pub typ: String,
     pub priority: String,
@@ -12,11 +12,15 @@ pub struct TaskPresenter {
     pub due_date: i64,
     pub project_id: i32,
     pub task_list: Vec<String>,
+    pub updated_at: String,
+    pub created_at: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TaskAllPresenter {
-    pub task_id: i32,
+    pub task_id: String,
     pub title: String,
     pub description: String,
+    pub updated_at: String,
+    pub created_at: String,
 }

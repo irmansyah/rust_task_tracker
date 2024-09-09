@@ -2,7 +2,7 @@ use crate::adapters::{api::tasks::tasks_payloads::TaskCreatePayload, api::tasks:
 use crate::application::mappers::api_mapper::ApiMapper;
 use crate::domain::task_entity::*;
 
-use super::tasks_payloads::{TaskPayload, TaskUpdatePayload};
+use super::tasks_payloads::{TaskIdPayload, TaskPayload, TaskUpdatePayload};
 use super::tasks_presenters::TaskAllPresenter;
 
 pub struct TaskCreatePresenterMapper {}
@@ -13,7 +13,7 @@ pub struct TaskAllPresenterMapper {}
 
 pub struct TaskPresenterMapper {}
 
-impl ApiMapper<TaskEntity, TaskPresenter, TaskPayload> for TaskPresenterMapper {
+impl ApiMapper<TaskEntity, TaskPresenter, TaskIdPayload> for TaskPresenterMapper {
     fn to_api(entity: TaskEntity) -> TaskPresenter {
         TaskPresenter {
             task_id: entity.id,
@@ -26,10 +26,12 @@ impl ApiMapper<TaskEntity, TaskPresenter, TaskPayload> for TaskPresenterMapper {
             due_date: entity.due_date,
             project_id: entity.project_id,
             task_list: entity.task_list,
+            updated_at: entity.updated_at.to_string(),
+            created_at: entity.created_at.to_string(),
         }
     }
 
-    fn to_entity(_payload: TaskPayload) -> TaskEntity {
+    fn to_entity(_payload: TaskIdPayload) -> TaskEntity {
         panic!("not implemented");
     }
 }
@@ -48,6 +50,8 @@ impl ApiMapper<TaskEntity, TaskPresenter, TaskCreatePayload> for TaskCreatePrese
             due_date: entity.due_date,
             project_id: entity.project_id,
             task_list: entity.task_list,
+            updated_at: entity.updated_at.to_string(),
+            created_at: entity.created_at.to_string(),
         }
     }
 
@@ -69,6 +73,8 @@ impl ApiMapper<TaskEntity, TaskPresenter, TaskUpdatePayload> for TaskUpdatePrese
             due_date: entity.due_date,
             project_id: entity.project_id,
             task_list: entity.task_list,
+            updated_at: entity.updated_at.to_string(),
+            created_at: entity.created_at.to_string(),
         }
     }
 
@@ -83,6 +89,8 @@ impl ApiMapper<TaskAllEntity, TaskAllPresenter, TaskPayload> for TaskAllPresente
             task_id: entity.id,
             title: entity.title,
             description: entity.description,
+            updated_at: entity.updated_at.to_string(),
+            created_at: entity.created_at.to_string(),
         }
     }
 

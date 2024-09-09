@@ -36,6 +36,8 @@ services:
       POSTGRES_DB: tasktracker_db
     volumes:
       - db_data:/var/lib/postgresql/data
+    # command: |
+    #   sh -c "psql -U diesel -d tasktracker_db -c 'CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";' && psql -U diesel -d tasktracker_db -f /migrations/init.sql"
 
 volumes:
   db_data:

@@ -124,6 +124,22 @@ impl fmt::Display for TaskStatusInProgressPayload {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct TaskIdPayload {
+    pub task_id: String,
+}
+
+impl TaskIdPayload {
+    pub fn new(
+        task_id: String,
+    ) -> Self {
+        TaskIdPayload {
+            task_id,
+        }
+    }
+}
+
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TaskCreatePayload {
     pub title: String,
     pub typ: Option<TaskTypePayload>,
@@ -165,7 +181,7 @@ impl TaskCreatePayload {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TaskUpdatePayload {
     // implement for POST/UPDATE requests
-    pub task_id: i32,
+    pub task_id: String,
     pub title: Option<String>,
     pub typ: Option<TaskTypePayload>,
     pub priority: Option<TaskPriorityPayload>,
@@ -179,7 +195,7 @@ pub struct TaskUpdatePayload {
 
 impl TaskUpdatePayload {
     pub fn new(
-        task_id: i32,
+        task_id: String,
         title: Option<String>,
         typ: Option<TaskTypePayload>,
         priority: Option<TaskPriorityPayload>,
@@ -206,3 +222,4 @@ impl TaskUpdatePayload {
 }
 
 pub struct TaskPayload {}
+

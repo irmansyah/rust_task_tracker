@@ -1,25 +1,24 @@
 use async_trait::async_trait;
 
 use crate::{
-    application::{repositories::tasks_repository_abstract::TasksRepositoryAbstract, usecases::interfaces::AbstractUseCase, utils::error_handling_utils::ErrorHandlingUtils},
-    domain::{task_entity::TaskEntity, error::ApiError},
+    adapters::api::tasks::tasks_payloads::TaskIdPayload, application::{repositories::tasks_repository_abstract::TasksRepositoryAbstract, usecases::interfaces::AbstractUseCase, utils::error_handling_utils::ErrorHandlingUtils}, domain::{error::ApiError, task_entity::TaskEntity}
 };
 
 pub struct DeleteOneTaskByIdUseCase<'a> {
-    task_id: &'a i32,
+    user_payload: &'a TaskIdPayload,
     repository: &'a dyn TasksRepositoryAbstract,
 }
 
 impl<'a> DeleteOneTaskByIdUseCase<'a> {
-    pub fn new(task_id: &'a i32, repository: &'a dyn TasksRepositoryAbstract) -> Self {
-        DeleteOneTaskByIdUseCase { task_id, repository }
+    pub fn new(user_payload: &'a TaskIdPayload, repository: &'a dyn TasksRepositoryAbstract) -> Self {
+        DeleteOneTaskByIdUseCase { user_payload, repository }
     }
 }
 
 #[async_trait(?Send)]
 impl<'a> AbstractUseCase<TaskEntity> for DeleteOneTaskByIdUseCase<'a> {
     async fn execute(&self) -> Result<TaskEntity, ApiError> {
-        let task = self.repository.delete_task_by_id(*self.task_id).await;
+        let task = self.repository.delete_task_by_id(&self.user_payload).await;
 
         match task {
             Ok(task) => Ok(task),
@@ -31,23 +30,22 @@ impl<'a> AbstractUseCase<TaskEntity> for DeleteOneTaskByIdUseCase<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockall::predicate::eq;
     use std::io::{Error, ErrorKind};
 
-    use crate::{application::repositories::tasks_repository_abstract::MockTasksRepositoryAbstract, domain::task_entity::TaskEntity};
+    use crate::{adapters::api::users::users_payloads::UserIdPayload, application::repositories::tasks_repository_abstract::MockTasksRepositoryAbstract, domain::task_entity::TaskEntity};
 
     #[actix_rt::test]
     async fn test_should_return_error_with_generic_message_when_unexpected_repo_error() {
         // given the "all dog tasks" usecase repo with an unexpected random error
         let mut task_repository = MockTasksRepositoryAbstract::new();
+        let payload = UserIdPayload::new(String::from("id1"));
         task_repository
             .expect_delete_task_by_id()
-            .with(eq(1))
             .times(1)
             .returning(|_| Err(Box::new(Error::new(ErrorKind::Other, "oh no!"))));
 
         // when calling usecase
-        let delete_one_task_by_id_usecase = DeleteOneTaskByIdUseCase::new(&1, &task_repository);
+        let delete_one_task_by_id_usecase = DeleteOneTaskByIdUseCase::new(&payload, &task_repository);
         let data = delete_one_task_by_id_usecase.execute().await;
 
         // then exception
@@ -60,7 +58,8 @@ mod tests {
     async fn test_should_return_one_result() {
         // given the "one dog task by id" usecase repo returning one result
         let mut task_repository = MockTasksRepositoryAbstract::new();
-        task_repository.expect_get_task_by_id().with(eq(1)).times(1).returning(|_| {
+        let payload = UserIdPayload::new(String::from("id1"));
+        task_repository.expect_get_task_by_id().times(1).returning(|_| {
             Ok(TaskEntity {
                 id: 1,
                 title: String::from("task1"),
@@ -76,7 +75,7 @@ mod tests {
         });
 
         // when calling usecase
-        let get_one_task_by_id_usecase = DeleteOneTaskByIdUseCase::new(&1, &task_repository);
+        let get_one_task_by_id_usecase = DeleteOneTaskByIdUseCase::new(&payload, &task_repository);
         let data = get_one_task_by_id_usecase.execute().await.unwrap();
 
         // then assert the result is the expected entity

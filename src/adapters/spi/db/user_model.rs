@@ -4,7 +4,6 @@ use uuid::Uuid;
 use chrono::NaiveDateTime;
 
 #[derive(Queryable, Insertable, Selectable, AsChangeset, QueryableByName)]
-// #[derive(Queryable, Selectable, AsChangeset)]
 #[diesel(table_name = users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {

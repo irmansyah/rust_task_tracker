@@ -12,15 +12,17 @@ diesel::table! {
 
 diesel::table! {
     projects (id) {
-        id -> Int4,
+        id -> Uuid,
         name -> Text,
         description -> Nullable<Text>,
+        updated_at -> Timestamp,
+        created_at -> Timestamp,
     }
 }
 
 diesel::table! {
     tasks (id) {
-        id -> Int4,
+        id -> Uuid,
         title -> Text,
         typ -> Nullable<Text>,
         priority -> Nullable<Text>,
@@ -30,10 +32,12 @@ diesel::table! {
         due_date -> Nullable<BigInt>,
         project_id -> Nullable<Int4>,
         task_list ->  Nullable<Array<Text>>,
+        updated_at -> Timestamp,
+        created_at -> Timestamp,
     }
 }
 
-joinable!(tasks -> projects (project_id));
+// joinable!(tasks -> projects (project_id));
 
 allow_tables_to_appear_in_same_query!(
     tasks,

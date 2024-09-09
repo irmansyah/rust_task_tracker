@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 
 use crate::{
-    adapters::api::users::users_payloads::{UserLoginPayload, UserRegisterPayload, UserUpdatePayload},
+    adapters::api::users::users_payloads::*,
     domain::user_entity::UserEntity,
 };
 
@@ -16,6 +16,6 @@ pub trait UsersRepositoryAbstract {
     async fn login_user(&self, user_payload: &UserLoginPayload) -> Result<UserEntity, Box<dyn Error>>;
     async fn update_one_user(&self, user_payload: &UserUpdatePayload) -> Result<UserEntity, Box<dyn Error>>;
     async fn get_all_users(&self) -> Result<Vec<UserEntity>, Box<dyn Error>>;
-    async fn get_user_by_id(&self, user_id: &String) -> Result<UserEntity, Box<dyn Error>>;
-    async fn delete_user_by_id(&self, user_id: &String) -> Result<UserEntity, Box<dyn Error>>;
+    async fn get_user_by_id(&self, user_payload: &UserIdPayload) -> Result<UserEntity, Box<dyn Error>>;
+    async fn delete_user_by_id(&self, user_payload: &UserIdPayload) -> Result<UserEntity, Box<dyn Error>>;
 }

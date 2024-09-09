@@ -1,6 +1,8 @@
+use chrono::NaiveDateTime;
+
 #[derive(Debug, Clone)]
 pub struct TaskEntity {
-    pub id: i32,
+    pub id: String,
     pub title: String,
     pub typ: String,
     pub priority: String,
@@ -10,11 +12,13 @@ pub struct TaskEntity {
     pub due_date: i64,
     pub project_id: i32,
     pub task_list: Vec<String>,
+    pub updated_at: NaiveDateTime,
+    pub created_at: NaiveDateTime,
 }
 
 impl TaskEntity {
     pub fn new(
-        id: i32,
+        id: String,
         title: String,
         typ: String,
         priority: String,
@@ -24,6 +28,8 @@ impl TaskEntity {
         due_date: i64,
         project_id: i32,
         task_list: Vec<String>,
+        updated_at: NaiveDateTime,
+        created_at: NaiveDateTime,
     ) -> Self {
         TaskEntity {
             id,
@@ -36,27 +42,35 @@ impl TaskEntity {
             due_date,
             project_id,
             task_list,
+            updated_at,
+            created_at,
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct TaskAllEntity {
-    pub id: i32,
+    pub id: String,
     pub title: String,
     pub description: String,
+    pub updated_at: NaiveDateTime,
+    pub created_at: NaiveDateTime,
 }
 
 impl TaskAllEntity {
     pub fn new(
-        id: i32,
+        id: String,
         title: String,
         description: String,
+        updated_at: NaiveDateTime,
+        created_at: NaiveDateTime,
     ) -> Self {
         TaskAllEntity {
             id,
             title,
             description,
+            updated_at,
+            created_at,
         }
     }
 }

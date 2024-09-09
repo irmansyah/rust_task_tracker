@@ -2,21 +2,17 @@ use uuid::Uuid;
 
 use crate::application::mappers::db_mapper::DbMapper;
 use crate::domain::task_entity::*;
-use crate::domain::user_entity::*;
 
-use super::user_model::User;
 use super::task_model::Task;
 
 pub struct TaskDbMapper {}
 
 pub struct TaskAllDbMapper {}
 
-pub struct UserDbMapper {}
-
 impl DbMapper<TaskEntity, Task> for TaskDbMapper {
     fn to_db(entity: TaskEntity) -> Task {
         Task {
-            id: entity.id,
+            id: Uuid::parse_str(&entity.id).unwrap_or_default(),
             title: entity.title,
             typ: Some(entity.typ),
             status: Some(entity.status),
@@ -26,12 +22,14 @@ impl DbMapper<TaskEntity, Task> for TaskDbMapper {
             due_date: Some(entity.due_date),
             project_id: Some(entity.project_id),
             task_list: Some(entity.task_list),
+            updated_at: todo!(),
+            created_at: todo!(),
         }
     }
 
     fn to_entity(model: Task) -> TaskEntity {
         TaskEntity {
-            id: model.id.to_owned(),
+            id: model.id.to_string(),
             title: model.title,
             typ: model.typ.unwrap_or_default(),
             priority: model.priority.unwrap_or_default(),
@@ -41,6 +39,8 @@ impl DbMapper<TaskEntity, Task> for TaskDbMapper {
             due_date: model.due_date.unwrap_or_default(),
             project_id: model.project_id.unwrap_or_default(),
             task_list: model.task_list.unwrap_or_default(),
+            updated_at: model.updated_at,
+            created_at: model.created_at,
         }
     }
 }
@@ -48,7 +48,7 @@ impl DbMapper<TaskEntity, Task> for TaskDbMapper {
 impl DbMapper<TaskAllEntity, Task> for TaskAllDbMapper {
     fn to_db(entity: TaskAllEntity) -> Task {
         Task {
-            id: entity.id.clone(),
+            id: Uuid::parse_str(&entity.id).unwrap_or_default(),
             title: entity.title,
             description: entity.description,
             typ: todo!(),
@@ -58,38 +58,16 @@ impl DbMapper<TaskAllEntity, Task> for TaskAllDbMapper {
             due_date: todo!(),
             project_id: todo!(),
             task_list: todo!(),
-        }
-    }
-
-    fn to_entity(model: Task) -> TaskAllEntity {
-        TaskAllEntity {
-            id: model.id.to_owned(),
-            title: model.title,
-            description: model.description,
-        }
-    }
-}
-
-impl DbMapper<UserEntity, User> for UserDbMapper {
-    fn to_db(entity: UserEntity) -> User {
-        User {
-            id: Uuid::parse_str(&entity.id).unwrap_or_default(),
-            username: entity.username,
-            email: entity.email,
-            password_hash: entity.password,
-            role: entity.role,
             updated_at: todo!(),
             created_at: todo!(),
         }
     }
 
-    fn to_entity(model: User) -> UserEntity {
-        UserEntity {
+    fn to_entity(model: Task) -> TaskAllEntity {
+        TaskAllEntity {
             id: model.id.to_string(),
-            username: model.username,
-            email: model.email,
-            password: model.password_hash,
-            role: model.role,
+            title: model.title,
+            description: model.description,
             updated_at: model.updated_at,
             created_at: model.created_at,
         }

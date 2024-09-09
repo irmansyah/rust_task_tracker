@@ -6,12 +6,12 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::adapters::api::users::users_payloads::*;
-use crate::adapters::spi::db::{db_connection::DbConnection, db_mappers::UserDbMapper, schema::users::dsl::*};
-use crate::application::{mappers::db_mapper::DbMapper, repositories::users_repository_abstract::UsersRepositoryAbstract};
-use crate::domain::user_entity::UserEntity;
+use crate::application::mappers::db_mapper::DbMapper;
+use crate::{application::repositories::users_repository_abstract::UsersRepositoryAbstract, domain::user_entity::UserEntity};
 
-use crate::adapters::spi::db::schema::users;
-
+use crate::adapters::spi::db::{db_connection::DbConnection, schema::users::dsl::*};
+use super::db_users_mappers::UserDbMapper;
+use super::schema::users::{self, *};
 use super::user_model::*;
 
 pub struct UsersRepository {
@@ -83,9 +83,9 @@ impl UsersRepositoryAbstract for UsersRepository {
         }
     }
 
-    async fn get_user_by_id(&self, user_id: &String) -> Result<UserEntity, Box<dyn Error>> {
+    async fn get_user_by_id(&self, user_payload: &UserIdPayload) -> Result<UserEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
-        let user_id = Uuid::parse_str(&user_id).unwrap();
+        let user_id = Uuid::parse_str(&user_payload.user_id).unwrap();
         let result = users.filter(id.eq(user_id)).get_result::<User>(&mut conn);
 
         match result {
@@ -94,9 +94,9 @@ impl UsersRepositoryAbstract for UsersRepository {
         }
     }
 
-    async fn delete_user_by_id(&self, user_id: &String) -> Result<UserEntity, Box<dyn Error>> {
+    async fn delete_user_by_id(&self, user_payload: &UserIdPayload) -> Result<UserEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
-        let user_id = Uuid::parse_str(&user_id).unwrap();
+        let user_id = Uuid::parse_str(&user_payload.user_id).unwrap();
         let target_user = users::table.filter(users::id.eq(user_id));
         let result = diesel::delete(target_user).get_result::<User>(&mut conn);
 

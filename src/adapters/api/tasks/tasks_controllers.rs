@@ -2,7 +2,7 @@ use crate::{
     adapters::api::{
         shared::{app_state::AppState, error_presenter::ErrorResponse},
         tasks::{
-            tasks_mappers::*, tasks_payloads::{TaskCreatePayload, TaskUpdatePayload}, tasks_presenters::TaskAllPresenter
+            tasks_mappers::*, tasks_payloads::{TaskCreatePayload, TaskIdPayload, TaskUpdatePayload}, tasks_presenters::TaskAllPresenter
         },
     },
     application::{
@@ -45,25 +45,7 @@ async fn post_one_task(data: web::Data<AppState>, path: web::Json<TaskCreatePayl
     }
 }
 
-#[patch("/")]
-async fn update_one_task(data: web::Data<AppState>, path: web::Json<TaskUpdatePayload>) -> Result<HttpResponse, ErrorResponse> {
-    let task_payload = path.into_inner();
-    let update_one_task_usecase = UpdateOneTaskUseCase::new(&task_payload, &data.tasks_repository);
-
-    match update_one_task_usecase.execute().await {
-        Ok(task) => {
-            let response = BaseResponse {
-                code: 200,
-                message: "Task updated successfully".to_string(),
-                data: TaskUpdatePresenterMapper::to_api(task),
-            };
-            Ok(HttpResponse::Ok().json(response))
-        }
-        Err(e) => Err(ErrorResponse::map_io_error(e)),
-    }
-}
-
-#[get("/")]
+#[get("/all")]
 async fn get_all_tasks(data: web::Data<AppState>) -> Result<HttpResponse, ErrorResponse> {
     let get_all_tasks_usecase = GetAllTasksUseCase::new(&data.tasks_repository);
     let tasks: Result<Vec<TaskAllEntity>, ApiError> = get_all_tasks_usecase.execute().await;
@@ -81,9 +63,27 @@ async fn get_all_tasks(data: web::Data<AppState>) -> Result<HttpResponse, ErrorR
     }
 }
 
-#[get("/{task_id}")]
-async fn get_one_task_by_id(data: web::Data<AppState>, path: web::Path<(i32,)>) -> Result<HttpResponse, ErrorResponse> {
-    let task_id = path.into_inner().0;
+#[patch("/one")]
+async fn update_one_task(data: web::Data<AppState>, path: web::Json<TaskUpdatePayload>) -> Result<HttpResponse, ErrorResponse> {
+    let task_payload = path.into_inner();
+    let update_one_task_usecase = UpdateOneTaskUseCase::new(&task_payload, &data.tasks_repository);
+
+    match update_one_task_usecase.execute().await {
+        Ok(task) => {
+            let response = BaseResponse {
+                code: 200,
+                message: "Task updated successfully".to_string(),
+                data: TaskUpdatePresenterMapper::to_api(task),
+            };
+            Ok(HttpResponse::Ok().json(response))
+        }
+        Err(e) => Err(ErrorResponse::map_io_error(e)),
+    }
+}
+
+#[get("/one")]
+async fn get_one_task_by_id(data: web::Data<AppState>, path: web::Json<TaskIdPayload>) -> Result<HttpResponse, ErrorResponse> {
+    let task_id = path.into_inner();
     let get_one_task_by_id_usecase = GetOneTaskByIdUseCase::new(&task_id, &data.tasks_repository);
 
     match get_one_task_by_id_usecase.execute().await {
@@ -99,9 +99,9 @@ async fn get_one_task_by_id(data: web::Data<AppState>, path: web::Path<(i32,)>) 
     }
 }
 
-#[delete("/{task_id}")]
-async fn delete_one_task_by_id(data: web::Data<AppState>, path: web::Path<(i32,)>) -> Result<HttpResponse, ErrorResponse> {
-    let task_id = path.into_inner().0;
+#[delete("/one")]
+async fn delete_one_task_by_id(data: web::Data<AppState>, path: web::Json<TaskIdPayload>) -> Result<HttpResponse, ErrorResponse> {
+    let task_id = path.into_inner();
     let delete_one_task_usecase = DeleteOneTaskByIdUseCase::new(&task_id, &data.tasks_repository);
 
     match delete_one_task_usecase.execute().await {
