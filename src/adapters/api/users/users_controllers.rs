@@ -56,8 +56,8 @@ async fn login_user(data: web::Data<AppState>, path: web::Json<UserLoginPayload>
     match login_user_usecase.execute().await {
         Ok(user) => {
             let response = BaseResponse {
-                code: 201,
-                message: "User created successfully".to_string(),
+                code: 200,
+                message: "User signin successfully".to_string(),
                 data: UserPresenterMapper::to_api(user),
             };
             Ok(HttpResponse::Created().json(response))

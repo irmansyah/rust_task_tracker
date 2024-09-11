@@ -83,8 +83,8 @@ async fn update_one_task(data: web::Data<AppState>, path: web::Json<TaskUpdatePa
 
 #[get("/one")]
 async fn get_one_task_by_id(data: web::Data<AppState>, path: web::Json<TaskIdPayload>) -> Result<HttpResponse, ErrorResponse> {
-    let task_id = path.into_inner();
-    let get_one_task_by_id_usecase = GetOneTaskByIdUseCase::new(&task_id, &data.tasks_repository);
+    let task_payload = path.into_inner();
+    let get_one_task_by_id_usecase = GetOneTaskByIdUseCase::new(&task_payload, &data.tasks_repository);
 
     match get_one_task_by_id_usecase.execute().await {
         Ok(task) => {
@@ -101,8 +101,8 @@ async fn get_one_task_by_id(data: web::Data<AppState>, path: web::Json<TaskIdPay
 
 #[delete("/one")]
 async fn delete_one_task_by_id(data: web::Data<AppState>, path: web::Json<TaskIdPayload>) -> Result<HttpResponse, ErrorResponse> {
-    let task_id = path.into_inner();
-    let delete_one_task_usecase = DeleteOneTaskByIdUseCase::new(&task_id, &data.tasks_repository);
+    let task_payload = path.into_inner();
+    let delete_one_task_usecase = DeleteOneTaskByIdUseCase::new(&task_payload, &data.tasks_repository);
 
     match delete_one_task_usecase.execute().await {
         Ok(task) => {

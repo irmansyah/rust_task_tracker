@@ -41,7 +41,7 @@ mod tests {
         // given the "all task tasks" usecase repo with an unexpected random error
         let mut task_repository = MockTasksRepositoryAbstract::new();
         let payload = TaskUpdatePayload::new(
-            1,
+            String::from("id1"),
             Some(String::from("task1")),
             Some(TaskTypePayload::Work),
             Some(TaskPriorityPayload::Low),
@@ -69,10 +69,10 @@ mod tests {
 
     #[actix_rt::test]
     async fn test_should_return_one_result() {
-        // given the "one task task by id" usecase repo returning one result
+        // given the "one task by id" usecase repo returning one result
         let mut task_repository = MockTasksRepositoryAbstract::new();
         let payload = TaskUpdatePayload::new(
-            1,
+            String::from("id1"),
             Some(String::from("task1")),
             Some(TaskTypePayload::Work),
             Some(TaskPriorityPayload::Low),
@@ -85,7 +85,7 @@ mod tests {
         );
         task_repository.expect_update_one_task().times(1).returning(|_| {
             Ok(TaskEntity {
-                id: 1,
+                id: String::from("id1"),
                 title: String::from("task1"),
                 typ: TaskTypePayload::Work.to_string(),
                 priority: TaskPriorityPayload::Low.to_string(),
@@ -95,6 +95,8 @@ mod tests {
                 due_date: 321472382,
                 project_id: 1,
                 task_list: [].to_vec(),
+                updated_at: todo!(),
+                created_at: todo!(),
             })
         });
 
@@ -103,7 +105,7 @@ mod tests {
         let data = get_one_task_by_id_usecase.execute().await.unwrap();
 
         // then assert the result is the expected entity
-        assert_eq!(data.id, 1);
+        assert_eq!(data.id, String::from("id1"));
         assert_eq!(data.title, "task1");
     }
 }

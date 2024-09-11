@@ -90,7 +90,6 @@ pub struct UserUpdatePayload {
     pub email: Option<String>,
     pub password: Option<String>,
     pub role: Option<UserRolePayload>,
-    // pub updated_at: NaiveDateTime,
 }
 
 impl UserUpdatePayload {

@@ -18,6 +18,9 @@ impl ApiMapper<UserEntity, UserPresenter, UserRegisterPayload> for UserPresenter
             email: entity.email,
             password: entity.password,
             role: entity.role,
+            access_token: entity.access_token,
+            fcm_token: entity.fcm_token,
+            last_login: naive_datetime_to_unixtimemillis(entity.last_login),
             updated_at: naive_datetime_to_unixtimemillis(entity.updated_at),
             created_at: naive_datetime_to_unixtimemillis(entity.created_at),
         }

@@ -15,6 +15,9 @@ impl DbMapper<UserEntity, User> for UserDbMapper {
             email: entity.email,
             password_hash: entity.password,
             role: entity.role,
+            access_token: entity.access_token,
+            fcm_token: entity.fcm_token,
+            last_login: todo!(),
             updated_at: todo!(),
             created_at: todo!(),
         }
@@ -27,6 +30,9 @@ impl DbMapper<UserEntity, User> for UserDbMapper {
             email: model.email,
             password: model.password_hash,
             role: model.role,
+            access_token: model.access_token,
+            fcm_token: model.fcm_token,
+            last_login: model.last_login,
             updated_at: model.updated_at,
             created_at: model.created_at,
         }

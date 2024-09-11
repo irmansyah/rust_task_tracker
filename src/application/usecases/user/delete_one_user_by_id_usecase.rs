@@ -64,10 +64,13 @@ mod tests {
         user_repository.expect_get_user_by_id().times(1).returning(|_| {
             Ok(UserEntity {
                 id: String::from("id1"),
-                username: String::from("Username 1"),
+                username: String::from("User 1"),
                 email: String::from("test1@gmail.com"),
-                password: String::from("test1234"),
+                password: String::from("Test1234"),
                 role: UserRolePayload::User.to_string(),
+                access_token: String::from("thisisaccesstoken123"),
+                fcm_token: String::from("thisisfcmtoken123"),
+                last_login: todo!(),
                 updated_at: todo!(),
                 created_at: todo!(),
             })

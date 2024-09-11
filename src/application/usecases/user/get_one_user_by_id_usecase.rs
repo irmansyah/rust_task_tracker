@@ -61,11 +61,14 @@ mod tests {
         let payload = UserIdPayload::new(String::from("id1"));
         user_repository.expect_get_user_by_id().times(1).returning(|_| {
             Ok(UserEntity {
-                id: String::from("userid1"),
-                username: String::from("user1"),
+                id: String::from("id1"),
+                username: String::from("User 1"),
                 email: String::from("test1@gmail.com"),
                 password: String::from("Test1234"),
                 role: UserRolePayload::User.to_string(),
+                access_token: String::from("thisisaccesstoken123"),
+                fcm_token: String::from("thisisfcmtoken123"),
+                last_login: todo!(),
                 updated_at: todo!(),
                 created_at: todo!(),
             })
@@ -77,6 +80,6 @@ mod tests {
 
         // then assert the result is the expected entity
         assert_eq!(data.id, String::from("id1"));
-        assert_eq!(data.username, "User 1");
+        assert_eq!(data.email, "test1@gmail.com");
     }
 }

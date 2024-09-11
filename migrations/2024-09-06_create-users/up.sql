@@ -5,6 +5,9 @@ CREATE TABLE "users" (
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL,
+    access_token VARCHAR(255) DEFAULT "",
+    fcm_token VARCHAR(255) DEFAULT "",
+    last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

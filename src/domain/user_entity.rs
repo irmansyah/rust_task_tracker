@@ -7,6 +7,9 @@ pub struct UserEntity {
     pub email: String,
     pub password: String,
     pub role: String,
+    pub access_token: String,
+    pub fcm_token: String,
+    pub last_login: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub created_at: NaiveDateTime,
 }
@@ -18,6 +21,9 @@ impl UserEntity {
         email: String,
         password: String,
         role: String,
+        access_token: String,
+        fcm_token: String,
+        last_login: NaiveDateTime,
         updated_at: NaiveDateTime,
         created_at: NaiveDateTime,
     ) -> Self {
@@ -27,6 +33,9 @@ impl UserEntity {
             email,
             password,
             role,
+            access_token,
+            fcm_token,
+            last_login,
             updated_at,
             created_at,
         }

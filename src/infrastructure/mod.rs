@@ -18,12 +18,11 @@ pub fn server(listener: TcpListener, db_name: &str) -> Result<Server, std::io::E
     // let http_connection = HttpConnection {};
 
     let data = web::Data::new(AppState {
-        app_name: String::from("Animal Facts API"),
+        app_name: String::from("Task Tracker API"),
         // cats_repository: CatFactsRepository {
         //     http_connection,
         //     source: dotenv::var("CATS_SOURCE").expect("CATS_SOURCE must be set"),
         // },
-        // dogs_repository: DogFactsRepository { db_connection: db_connection.clone() },
         users_repository: UsersRepository { db_connection: db_connection.clone() },
         tasks_repository: TasksRepository { db_connection: db_connection.clone() },
     });

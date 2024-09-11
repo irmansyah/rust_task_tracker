@@ -12,6 +12,9 @@ pub struct User {
     pub email: String,
     pub password_hash: String,
     pub role: String,
+    pub access_token: String,
+    pub fcm_token: String,
+    pub last_login: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub created_at: NaiveDateTime,
 }
@@ -25,17 +28,3 @@ pub struct UserRegister<'a> {
     pub role: &'a str,
 }
 
-#[derive(Insertable, AsChangeset)]
-#[diesel(table_name = users)]
-pub struct UserLogin<'a> {
-    pub email: &'a str,
-    pub password_hash: &'a str,
-}
-
-#[derive(AsChangeset)]
-#[diesel(table_name = users)]
-pub struct UserUpdate<'a> {
-    pub username: Option<&'a str>,
-    pub password_hash: Option<&'a str>,
-    pub updated_at: NaiveDateTime,
-}

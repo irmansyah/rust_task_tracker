@@ -180,7 +180,6 @@ impl TaskCreatePayload {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TaskUpdatePayload {
-    // implement for POST/UPDATE requests
     pub task_id: String,
     pub title: Option<String>,
     pub typ: Option<TaskTypePayload>,

@@ -36,7 +36,7 @@ mod tests {
 
     #[actix_rt::test]
     async fn test_should_return_error_with_generic_message_when_unexpected_repo_error() {
-        // given the "all dog tasks" usecase repo with an unexpected random error
+        // given the "all tasks" usecase repo with an unexpected random error
         let mut task_repository = MockTasksRepositoryAbstract::new();
         task_repository
             .expect_get_all_tasks()
@@ -51,12 +51,12 @@ mod tests {
         // then exception
         assert!(data.is_err());
         let result = data.unwrap_err();
-        assert_eq!("Cannot get all dog tasks", result.message);
+        assert_eq!("Cannot get all tasks", result.message);
     }
 
     #[actix_rt::test]
     async fn test_should_return_empty_list() {
-        // given the "all dog tasks" usecase repo returning an empty list
+        // given the "all tasks" usecase repo returning an empty list
         let mut task_repository = MockTasksRepositoryAbstract::new();
         task_repository.expect_get_all_tasks().with().times(1).returning(|| Ok(Vec::<TaskAllEntity>::new()));
 
@@ -70,7 +70,7 @@ mod tests {
 
     #[actix_rt::test]
     async fn test_should_return_list() {
-        // given the "all dog tasks" usecase repo returning a list of 2 entities
+        // given the "all tasks" usecase repo returning a list of 2 entities
         let mut task_repository = MockTasksRepositoryAbstract::new();
         task_repository.expect_get_all_tasks().with().times(1).returning(|| {
             Ok(vec![

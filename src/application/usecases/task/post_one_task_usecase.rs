@@ -34,7 +34,10 @@ mod tests {
     use super::*;
     use std::io::{Error, ErrorKind};
 
-    use crate::{adapters::api::tasks::tasks_payloads::{TaskPriorityPayload, TaskStatusPayload, TaskStatusToDoPayload, TaskTypePayload}, application::{repositories::tasks_repository_abstract::MockTasksRepositoryAbstract, usecases::task::post_one_task_usecase::PostOneTaskUseCase}};
+    use crate::{
+        adapters::api::tasks::tasks_payloads::{TaskPriorityPayload, TaskStatusPayload, TaskStatusToDoPayload, TaskTypePayload},
+        application::{repositories::tasks_repository_abstract::MockTasksRepositoryAbstract, usecases::task::post_one_task_usecase::PostOneTaskUseCase},
+    };
 
     #[actix_rt::test]
     async fn test_should_return_generic_message_when_unexpected_repo_error() {
@@ -83,16 +86,18 @@ mod tests {
         );
         task_repository.expect_post_one_task().times(1).returning(|_| {
             Ok(TaskEntity {
-                id: 1,
-                title: String::from(""),
-                typ: String::from(""),
-                priority: String::from(""),
-                status: String::from(""),
+                id: String::from("id1"),
+                title: String::from("task1"),
+                typ: TaskTypePayload::Work.to_string(),
+                priority: TaskPriorityPayload::Low.to_string(),
+                status: TaskStatusPayload::ToDo(TaskStatusToDoPayload::NotStarted).to_string(),
                 description: String::from(""),
                 duration: 1,
                 due_date: 321472382,
                 project_id: 1,
                 task_list: [].to_vec(),
+                updated_at: todo!(),
+                created_at: todo!(),
             })
         });
 
@@ -101,7 +106,7 @@ mod tests {
         let data = get_one_task_by_id_usecase.execute().await.unwrap();
 
         // then assert the result is the expected entity
-        assert_eq!(data.id, 1);
+        assert_eq!(data.id, String::from("id1"));
         assert_eq!(data.title, "task1");
     }
 }

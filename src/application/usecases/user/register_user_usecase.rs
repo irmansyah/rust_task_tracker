@@ -24,7 +24,7 @@ impl<'a> AbstractUseCase<UserEntity> for RegisterUserUseCase<'a> {
 
         match user {
             Ok(user) => Ok(user),
-            Err(e) => Err(ErrorHandlingUtils::application_error("Cannot post user", Some(e))),
+            Err(e) => Err(ErrorHandlingUtils::application_error(&e.to_string(), Some(e))),
         }
     }
 }
@@ -66,12 +66,15 @@ mod tests {
         user_repository.expect_register_user().times(1).returning(|_| {
             Ok(UserEntity {
                 id: String::from("id1"),
-                username: String::from("Username 1"),
-                email: String::from("Test1@gmail.com"),
-                password: String::from("test1234"),
+                username: String::from("User 1"),
+                email: String::from("test1@gmail.com"),
+                password: String::from("Test1234"),
                 role: UserRolePayload::User.to_string(),
-                updated_at: todo!(), 
-                created_at: todo!()
+                access_token: String::from("thisisaccesstoken123"),
+                fcm_token: String::from("thisisfcmtoken123"),
+                last_login: todo!(),
+                updated_at: todo!(),
+                created_at: todo!(),
             })
         });
 
@@ -81,6 +84,6 @@ mod tests {
 
         // then assert the result is the expected entity
         assert_eq!(data.id, String::from("id1"));
-        assert_eq!(data.username, "User 1");
+        assert_eq!(data.email, "test1@gmail.com");
     }
 }

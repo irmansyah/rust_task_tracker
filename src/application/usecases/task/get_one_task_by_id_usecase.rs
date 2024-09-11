@@ -7,20 +7,20 @@ use crate::{
 };
 
 pub struct GetOneTaskByIdUseCase<'a> {
-    user_payload: &'a TaskIdPayload,
+    task_payload: &'a TaskIdPayload,
     repository: &'a dyn TasksRepositoryAbstract,
 }
 
 impl<'a> GetOneTaskByIdUseCase<'a> {
-    pub fn new(user_payload: &'a TaskIdPayload, repository: &'a dyn TasksRepositoryAbstract) -> Self {
-        GetOneTaskByIdUseCase { user_payload, repository }
+    pub fn new(task_payload: &'a TaskIdPayload, repository: &'a dyn TasksRepositoryAbstract) -> Self {
+        GetOneTaskByIdUseCase { task_payload, repository }
     }
 }
 
 #[async_trait(?Send)]
 impl<'a> AbstractUseCase<TaskEntity> for GetOneTaskByIdUseCase<'a> {
     async fn execute(&self) -> Result<TaskEntity, ApiError> {
-        let task = self.repository.get_task_by_id(&self.user_payload).await;
+        let task = self.repository.get_task_by_id(&self.task_payload).await;
 
         match task {
             Ok(task) => Ok(task),
@@ -35,7 +35,7 @@ mod tests {
     use std::io::{Error, ErrorKind};
 
     use crate::{
-        adapters::api::{tasks::tasks_payloads::*, users::users_payloads::UserIdPayload},
+        adapters::api::{tasks::tasks_payloads::*, tasks::tasks_payloads::TaskIdPayload},
         application::repositories::tasks_repository_abstract::MockTasksRepositoryAbstract,
         domain::task_entity::TaskEntity,
     };
@@ -44,7 +44,7 @@ mod tests {
     async fn test_should_return_error_with_generic_message_when_unexpected_repo_error() {
         // given the "all tasks" usecase repo with an unexpected random error
         let mut task_repository = MockTasksRepositoryAbstract::new();
-        let payload = UserIdPayload::new(String::from("id1"));
+        let payload = TaskIdPayload::new(String::from("id1"));
         task_repository
             .expect_get_task_by_id()
             .times(1)
@@ -64,10 +64,10 @@ mod tests {
     async fn test_should_return_one_result() {
         // given the "one task by id" usecase repo returning one result
         let mut task_repository = MockTasksRepositoryAbstract::new();
-        let payload = UserIdPayload::new(String::from("id1"));
+        let payload = TaskIdPayload::new(String::from("id1"));
         task_repository.expect_get_task_by_id().times(1).returning(|_| {
             Ok(TaskEntity {
-                id: 1,
+                id: String::from("id1"),
                 title: String::from("task1"),
                 typ: TaskTypePayload::Work.to_string(),
                 priority: TaskPriorityPayload::Low.to_string(),
@@ -77,6 +77,8 @@ mod tests {
                 due_date: 321472382,
                 project_id: 1,
                 task_list: [].to_vec(),
+                updated_at: todo!(),
+                created_at: todo!(),
             })
         });
 
@@ -85,7 +87,7 @@ mod tests {
         let data = get_one_task_by_id_usecase.execute().await.unwrap();
 
         // then assert the result is the expected entity
-        assert_eq!(data.id, 1);
+        assert_eq!(data.id, String::from("id1"));
         assert_eq!(data.title, "task1");
     }
 }
