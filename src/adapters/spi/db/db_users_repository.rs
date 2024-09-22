@@ -2,13 +2,17 @@ use async_trait::async_trait;
 use bcrypt::{hash, DEFAULT_COST};
 use chrono::Utc;
 use diesel::prelude::*;
+use hmac::{Hmac, Mac};
+use sha2::Sha256;
+use std::collections::HashSet;
 use std::error::Error;
 use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::adapters::api::users::users_payloads::*;
 use crate::application::mappers::db_mapper::DbMapper;
-use crate::application::utils::{jwt, validate_params};
+use crate::application::utils::access_control::extractors::claims::{generate_token, Claims, Permission, Role};
+use crate::application::utils::validate_params;
 use crate::{application::repositories::users_repository_abstract::UsersRepositoryAbstract, domain::user_entity::UserEntity};
 
 use super::db_users_mappers::UserDbMapper;
@@ -78,23 +82,37 @@ impl UsersRepositoryAbstract for UsersRepository {
         if !bcrypt::verify(data_password, &user.password_hash).unwrap() {
             return Err(String::from("Invalid email or password!").into());
         }
+        // let data_access_token = match jwt::encode(user.id.to_string()) {
+        //     Ok(token) => Ok(token),
+        //     Err(_) => Err(String::from("Error generating token!")),
+        // };
+        //
+        // let jwt_secret: Hmac<Sha256> = Hmac::new_from_slice(std::env::var("JWT_SECRET").expect("JWT_SECRET must be set!").as_bytes()).unwrap();
+        // let claims = AccessTokenClaims {
+        //     id: user.id.to_string(),
+        //     exp: chrono::Utc::now().timestamp() + 3600 * 24,
+        // };
+        // let data_access_token = claims.sign_with_key(&jwt_secret).unwrap_or_default();
 
-        // let data_access_token = jwt::encode(user.id.to_string()).unwrap_or_default();
-        let data_access_token = match jwt::encode(user.id.to_string()) {
-            Ok(token) => Ok(token),
-            Err(_) => Err(String::from("Error generating token!")),
-        };
+        let jwt_secret_string = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set!");
+        let jwt_secret = jwt_secret_string.as_bytes();
+
+        // Define some specific permissions
+        let mut permissions = HashSet::new();
+        permissions.insert(Permission::Read("admin-messages".to_string()));
+        permissions.insert(Permission::Read("author-messages".to_string()));
+        permissions.insert(Permission::Read("user-messages".to_string()));
+
+        let data_role = Role::Admin;
+
+        let data_access_token = generate_token(jwt_secret, &user.id.to_string(), data_role.clone(), Some(permissions.clone())).unwrap_or_default();
 
         let target = users.filter(id.eq(user.id));
         let result = diesel::update(target)
-            .set((
-                access_token.eq(data_access_token.unwrap_or_default().clone()),
-                last_login.eq(Utc::now().naive_utc().clone()),
-            ))
+            .set((access_token.eq(data_access_token), last_login.eq(Utc::now().naive_utc().clone())))
             .returning(User::as_returning())
             .get_result(&mut conn);
 
-        
         match result {
             Ok(model) => Ok(UserDbMapper::to_entity(model)),
             Err(e) => Err(Box::new(e)),

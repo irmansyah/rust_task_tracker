@@ -1,10 +1,10 @@
 use std::{env, net::TcpListener, sync::Arc};
 
-use crate::adapters::{
+use crate::{adapters::{
     self,
     api::shared::app_state::AppState,
     spi::db::{db_connection::DbConnection, db_tasks_repository::TasksRepository, db_users_repository::UsersRepository},
-};
+}, application::utils::access_control::middlewares::{self, err_handlers, security_headers}};
 use actix_web::{dev::Server, middleware::Logger};
 use actix_web::{web, App, HttpServer};
 
@@ -23,15 +23,22 @@ pub fn server(listener: TcpListener, db_name: &str) -> Result<Server, std::io::E
         //     http_connection,
         //     source: dotenv::var("CATS_SOURCE").expect("CATS_SOURCE must be set"),
         // },
-        users_repository: UsersRepository { db_connection: db_connection.clone() },
-        tasks_repository: TasksRepository { db_connection: db_connection.clone() },
+        users_repository: UsersRepository {
+            db_connection: db_connection.clone(),
+        },
+        tasks_repository: TasksRepository {
+            db_connection: db_connection.clone(),
+        },
     });
 
     let port = listener.local_addr().unwrap().port();
 
-    let server = HttpServer::new(move || App::new().app_data(data.clone()).wrap(Logger::default()).configure(adapters::api::shared::routes::routes))
-        .listen(listener)?
-        .run();
+    let server = HttpServer::new(move || 
+        App::new().app_data(data.clone())
+            .wrap(Logger::default())
+            .configure(adapters::api::shared::routes::routes))
+            .listen(listener)?
+            .run();
 
     println!("Server running on port : {}, db_name : {}", port, db_name);
 

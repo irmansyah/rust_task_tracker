@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::{
     adapters::api::{
         shared::{app_state::AppState, error_presenter::ErrorResponse},
@@ -15,7 +17,7 @@ use crate::{
                 delete_one_user_by_id_usecase::DeleteOneUserByIdUseCase, get_all_users_usecase::GetAllUsersUseCase, get_one_user_by_id_usecase::GetOneUserByIdUseCase,
                 login_user_usecase::LoginUserUseCase, register_user_usecase::RegisterUserUseCase, update_one_user_usecase::UpdateOneUserUseCase,
             },
-        },
+        }, utils::access_control::extractors::claims::{self, generate_token, Claims, Permission, Role},
     },
     domain::{error::ApiError, user_entity::UserEntity},
 };
@@ -85,20 +87,33 @@ async fn update_one_user(data: web::Data<AppState>, path: web::Json<UserUpdatePa
 }
 
 #[get("/all")]
-async fn get_all_user(data: web::Data<AppState>) -> Result<HttpResponse, ErrorResponse> {
-    let get_all_users_usecase = GetAllUsersUseCase::new(&data.users_repository);
-    let user: Result<Vec<UserEntity>, ApiError> = get_all_users_usecase.execute().await;
+async fn get_all_user(data: web::Data<AppState>, claims: Claims) -> Result<HttpResponse, ErrorResponse> {
+    let allowed_roles = vec![Role::SuperAdmin, Role::Admin, Role::Author, Role::User];
+    if claims.validate_roles(&allowed_roles) {
+        println!("Role validated: SuperAdmin, Admin, Author, User");
+    }
+    let mut required_permissions = HashSet::new();
+    required_permissions.insert(Permission::Read("admin-messages".to_string()));
+    required_permissions.insert(Permission::Read("author-messages".to_string()));
+    required_permissions.insert(Permission::Read("user-messages".to_string()));
 
-    match user {
-        Ok(user) => {
-            let response = BaseResponse {
-                code: 200,
-                message: "User list retrieved successfully".to_string(),
-                data: user.into_iter().map(UserPresenterMapper::to_api).collect::<Vec<UserPresenter>>(),
-            };
-            Ok(HttpResponse::Ok().json(response))
+    if claims.validate_permissions(&required_permissions) {
+        let get_all_users_usecase = GetAllUsersUseCase::new(&data.users_repository);
+        let user: Result<Vec<UserEntity>, ApiError> = get_all_users_usecase.execute().await;
+
+        match user {
+            Ok(user) => {
+                let response = BaseResponse {
+                    code: 200,
+                    message: "User list retrieved successfully".to_string(),
+                    data: user.into_iter().map(UserPresenterMapper::to_api).collect::<Vec<UserPresenter>>(),
+                };
+                Ok(HttpResponse::Ok().json(response))
+            }
+            Err(e) => Err(ErrorResponse::map_io_error(e)),
         }
-        Err(e) => Err(ErrorResponse::map_io_error(e)),
+    } else {
+        return Err(ErrorResponse::default());
     }
 }
 

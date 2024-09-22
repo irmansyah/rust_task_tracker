@@ -18,6 +18,16 @@ pub struct ErrorResponse {
     error: String,
 }
 
+impl Default for ErrorResponse {
+    fn default() -> Self {
+        ErrorResponse {
+            code: StatusCode::UNAUTHORIZED,
+            error: "Permission denied".to_string(),
+        }
+    }
+}
+
+
 impl ResponseError for ErrorResponse {
     fn status_code(&self) -> StatusCode {
         self.code

@@ -1,8 +1,12 @@
+use std::collections::HashSet;
+
 use crate::{
     adapters::api::{
         shared::{app_state::AppState, error_presenter::ErrorResponse},
         tasks::{
-            tasks_mappers::*, tasks_payloads::{TaskCreatePayload, TaskIdPayload, TaskUpdatePayload}, tasks_presenters::TaskAllPresenter
+            tasks_mappers::*,
+            tasks_payloads::{TaskCreatePayload, TaskIdPayload, TaskUpdatePayload},
+            tasks_presenters::TaskAllPresenter,
         },
     },
     application::{
@@ -14,6 +18,7 @@ use crate::{
                 post_one_task_usecase::PostOneTaskUseCase, update_one_task_usecase::UpdateOneTaskUseCase,
             },
         },
+        utils::access_control::extractors::claims::{Claims, Permission, Role},
     },
     domain::{error::ApiError, task_entity::*},
 };
@@ -46,20 +51,33 @@ async fn post_one_task(data: web::Data<AppState>, path: web::Json<TaskCreatePayl
 }
 
 #[get("/all")]
-async fn get_all_tasks(data: web::Data<AppState>) -> Result<HttpResponse, ErrorResponse> {
-    let get_all_tasks_usecase = GetAllTasksUseCase::new(&data.tasks_repository);
-    let tasks: Result<Vec<TaskAllEntity>, ApiError> = get_all_tasks_usecase.execute().await;
+async fn get_all_tasks(data: web::Data<AppState>, claims: Claims) -> Result<HttpResponse, ErrorResponse> {
+    let allowed_roles = vec![Role::SuperAdmin, Role::Admin, Role::Author, Role::User];
+    if claims.validate_roles(&allowed_roles) {
+        println!("Role validated: SuperAdmin, Admin, Author, User");
+    }
+    let mut required_permissions = HashSet::new();
+    // required_permissions.insert(Permission::Read("superadmin-messages".to_string()));
+    required_permissions.insert(Permission::Read("admin-messages".to_string()));
+    required_permissions.insert(Permission::Read("author-messages".to_string()));
+    required_permissions.insert(Permission::Read("user-messages".to_string()));
+    if claims.validate_permissions(&required_permissions) {
+        let get_all_tasks_usecase = GetAllTasksUseCase::new(&data.tasks_repository);
+        let tasks: Result<Vec<TaskAllEntity>, ApiError> = get_all_tasks_usecase.execute().await;
 
-    match tasks {
-        Ok(tasks) => {
-            let response = BaseResponse {
-                code: 200,
-                message: "Task list retrieved successfully".to_string(),
-                data: tasks.into_iter().map(TaskAllPresenterMapper::to_api).collect::<Vec<TaskAllPresenter>>(),
-            };
-            Ok(HttpResponse::Ok().json(response))
+        match tasks {
+            Ok(tasks) => {
+                let response = BaseResponse {
+                    code: 200,
+                    message: "Task list retrieved successfully".to_string(),
+                    data: tasks.into_iter().map(TaskAllPresenterMapper::to_api).collect::<Vec<TaskAllPresenter>>(),
+                };
+                Ok(HttpResponse::Ok().json(response))
+            }
+            Err(e) => Err(ErrorResponse::map_io_error(e)),
         }
-        Err(e) => Err(ErrorResponse::map_io_error(e)),
+    } else {
+        return Err(ErrorResponse::default());
     }
 }
 
