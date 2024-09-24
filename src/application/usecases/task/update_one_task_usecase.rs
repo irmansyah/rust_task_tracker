@@ -42,6 +42,7 @@ mod tests {
         let mut task_repository = MockTasksRepositoryAbstract::new();
         let payload = TaskUpdatePayload::new(
             String::from("id1"),
+            String::from("id1"),
             Some(String::from("task1")),
             Some(TaskTypePayload::Work),
             Some(TaskPriorityPayload::Low),
@@ -73,6 +74,7 @@ mod tests {
         let mut task_repository = MockTasksRepositoryAbstract::new();
         let payload = TaskUpdatePayload::new(
             String::from("id1"),
+            String::from("id1"),
             Some(String::from("task1")),
             Some(TaskTypePayload::Work),
             Some(TaskPriorityPayload::Low),
@@ -86,6 +88,7 @@ mod tests {
         task_repository.expect_update_one_task().times(1).returning(|_| {
             Ok(TaskEntity {
                 id: String::from("id1"),
+                user_id: String::from("id1"),
                 title: String::from("task1"),
                 typ: TaskTypePayload::Work.to_string(),
                 priority: TaskPriorityPayload::Low.to_string(),

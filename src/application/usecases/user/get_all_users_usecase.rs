@@ -2,7 +2,7 @@ use async_trait::async_trait;
 
 use crate::{
     application::{repositories::users_repository_abstract::UsersRepositoryAbstract, usecases::interfaces::AbstractUseCase, utils::error_handling_utils::ErrorHandlingUtils},
-    domain::{error::ApiError, user_entity::UserEntity},
+    domain::{error::ApiError, user_entity::UserAllEntity},
 };
 
 pub struct GetAllUsersUseCase<'a> {
@@ -16,8 +16,8 @@ impl<'a> GetAllUsersUseCase<'a> {
 }
 
 #[async_trait(?Send)]
-impl<'a> AbstractUseCase<Vec<UserEntity>> for GetAllUsersUseCase<'a> {
-    async fn execute(&self) -> Result<Vec<UserEntity>, ApiError> {
+impl<'a> AbstractUseCase<Vec<UserAllEntity>> for GetAllUsersUseCase<'a> {
+    async fn execute(&self) -> Result<Vec<UserAllEntity>, ApiError> {
         let users = self.repository.get_all_users().await;
 
         match users {
@@ -32,7 +32,7 @@ mod tests {
     use super::*;
     use std::io::{Error, ErrorKind};
 
-    use crate::{adapters::api::users::users_payloads::UserRolePayload, application::repositories::users_repository_abstract::MockUsersRepositoryAbstract, domain::user_entity::UserEntity};
+    use crate::{adapters::api::users::users_payloads::UserRolePayload, application::repositories::users_repository_abstract::MockUsersRepositoryAbstract, domain::user_entity::UserAllEntity};
 
     #[actix_rt::test]
     async fn test_should_return_error_with_generic_message_when_unexpected_repo_error() {
@@ -58,7 +58,7 @@ mod tests {
     async fn test_should_return_empty_list() {
         // given the "all dog users" usecase repo returning an empty list
         let mut user_repository = MockUsersRepositoryAbstract::new();
-        user_repository.expect_get_all_users().with().times(1).returning(|| Ok(Vec::<UserEntity>::new()));
+        user_repository.expect_get_all_users().with().times(1).returning(|| Ok(Vec::<UserAllEntity>::new()));
 
         // when calling usecase
         let get_all_users_usecase = GetAllUsersUseCase::new(&user_repository);
@@ -74,29 +74,17 @@ mod tests {
         let mut user_repository = MockUsersRepositoryAbstract::new();
         user_repository.expect_get_all_users().with().times(1).returning(|| {
             Ok(vec![
-                UserEntity {
+                UserAllEntity {
                     id: String::from("id1"),
                     username: String::from("User 1"),
                     email: String::from("test1@gmail.com"),
-                    password: String::from("Test1234"),
                     role: UserRolePayload::User.to_string(),
-                    access_token: String::from("thisisaccesstoken123"),
-                    fcm_token: String::from("thisisfcmtoken123"),
-                    last_login: todo!(),
-                    updated_at: todo!(),
-                    created_at: todo!(),
                 },
-                UserEntity {
+                UserAllEntity {
                     id: String::from("id2"),
                     username: String::from("User 2"),
                     email: String::from("test1@gmail.com"),
-                    password: String::from("Test1234"),
                     role: UserRolePayload::User.to_string(),
-                    access_token: String::from("thisisaccesstoken123"),
-                    fcm_token: String::from("thisisfcmtoken123"),
-                    last_login: todo!(),
-                    updated_at: todo!(),
-                    created_at: todo!(),
                 },
             ])
         });

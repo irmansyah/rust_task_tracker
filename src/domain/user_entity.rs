@@ -41,3 +41,27 @@ impl UserEntity {
         }
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct UserAllEntity {
+    pub id: String,
+    pub username: String,
+    pub email: String,
+    pub role: String,
+}
+
+impl UserAllEntity {
+    pub fn new(
+        id: String,
+        username: String,
+        email: String,
+        role: String,
+    ) -> Self {
+        UserAllEntity {
+            id,
+            username,
+            email,
+            role,
+        }
+    }
+}

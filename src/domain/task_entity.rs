@@ -3,6 +3,7 @@ use chrono::NaiveDateTime;
 #[derive(Debug, Clone)]
 pub struct TaskEntity {
     pub id: String,
+    pub user_id: String,
     pub title: String,
     pub typ: String,
     pub priority: String,
@@ -19,6 +20,7 @@ pub struct TaskEntity {
 impl TaskEntity {
     pub fn new(
         id: String,
+        user_id: String,
         title: String,
         typ: String,
         priority: String,
@@ -33,6 +35,7 @@ impl TaskEntity {
     ) -> Self {
         TaskEntity {
             id,
+            user_id,
             title,
             typ,
             priority,
@@ -51,6 +54,7 @@ impl TaskEntity {
 #[derive(Debug, Clone)]
 pub struct TaskAllEntity {
     pub id: String,
+    pub user_id: String,
     pub title: String,
     pub description: String,
     pub updated_at: NaiveDateTime,
@@ -60,6 +64,7 @@ pub struct TaskAllEntity {
 impl TaskAllEntity {
     pub fn new(
         id: String,
+        user_id: String,
         title: String,
         description: String,
         updated_at: NaiveDateTime,
@@ -67,6 +72,7 @@ impl TaskAllEntity {
     ) -> Self {
         TaskAllEntity {
             id,
+            user_id,
             title,
             description,
             updated_at,

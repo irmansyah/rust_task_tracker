@@ -7,11 +7,3 @@ pub trait ApiMapper<Entity, Presenter, Payload> {
     // Map a Payload to an Entity
     fn to_entity(payload: Payload) -> Entity;
 }
-
-#[derive(Serialize)]
-pub struct BaseResponse<T> {
-    pub code: u16,
-    pub message: String,
-    pub data: T,
-}
-

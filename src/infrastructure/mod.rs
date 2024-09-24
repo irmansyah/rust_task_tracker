@@ -1,12 +1,17 @@
 use std::{env, net::TcpListener, sync::Arc};
 
-use crate::{adapters::{
-    self,
-    api::shared::app_state::AppState,
-    spi::db::{db_connection::DbConnection, db_tasks_repository::TasksRepository, db_users_repository::UsersRepository},
-}, application::utils::access_control::middlewares::{self, err_handlers, security_headers}};
+use crate::{
+    adapters::{
+        self,
+        api::shared::app_state::AppState,
+        spi::db::{db_connection::DbConnection, db_tasks_repository::TasksRepository, db_users_repository::UsersRepository},
+    },
+    application::utils::access_control::middlewares::{self, err_handlers, logger, security_headers},
+};
 use actix_web::{dev::Server, middleware::Logger};
 use actix_web::{web, App, HttpServer};
+
+pub mod env_source;
 
 pub fn server(listener: TcpListener, db_name: &str) -> Result<Server, std::io::Error> {
     env::set_var("RUST_BACKTRACE", "1");
@@ -33,12 +38,16 @@ pub fn server(listener: TcpListener, db_name: &str) -> Result<Server, std::io::E
 
     let port = listener.local_addr().unwrap().port();
 
-    let server = HttpServer::new(move || 
-        App::new().app_data(data.clone())
-            .wrap(Logger::default())
-            .configure(adapters::api::shared::routes::routes))
-            .listen(listener)?
-            .run();
+    let server = HttpServer::new(move || {
+        App::new()
+            .app_data(data.clone())
+            // .wrap(middlewares::cors(&config.client_origin_url))
+            .wrap(security_headers::security_headers())
+            .wrap(logger::logger())
+            .configure(adapters::api::shared::routes::routes)
+    })
+    .listen(listener)?
+    .run();
 
     println!("Server running on port : {}, db_name : {}", port, db_name);
 

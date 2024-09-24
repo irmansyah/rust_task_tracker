@@ -7,6 +7,8 @@ use super::user_model::User;
 
 pub struct UserDbMapper {}
 
+pub struct UserAllDbMapper {}
+
 impl DbMapper<UserEntity, User> for UserDbMapper {
     fn to_db(entity: UserEntity) -> User {
         User {
@@ -35,6 +37,32 @@ impl DbMapper<UserEntity, User> for UserDbMapper {
             last_login: model.last_login,
             updated_at: model.updated_at,
             created_at: model.created_at,
+        }
+    }
+}
+
+impl DbMapper<UserAllEntity, User> for UserAllDbMapper {
+    fn to_db(entity: UserAllEntity) -> User {
+        User {
+            id: Uuid::parse_str(&entity.id).unwrap_or_default(),
+            username: entity.username,
+            email: entity.email,
+            role: entity.role,
+            password_hash: todo!(),
+            access_token: todo!(),
+            fcm_token: todo!(),
+            last_login: todo!(),
+            updated_at: todo!(),
+            created_at: todo!(),
+        }
+    }
+
+    fn to_entity(model: User) -> UserAllEntity {
+        UserAllEntity {
+            id: model.id.to_string(),
+            username: model.username,
+            email: model.email,
+            role: model.role,
         }
     }
 }

@@ -69,16 +69,19 @@ impl UserRegisterPayload {
 pub struct UserLoginPayload {
     pub email: String,
     pub password: String,
+    // pub role: Option<UserRolePayload>,
 }
 
 impl UserLoginPayload {
     pub fn new(
         email: String, 
         password: String, 
+        // role: Option<UserRolePayload>, 
     ) -> Self {
         UserLoginPayload {
             email,
             password,
+            // role,
         }
     }
 }
@@ -109,3 +112,5 @@ impl UserUpdatePayload {
         }
     }
 }
+
+pub struct UserPayload {}

@@ -8,6 +8,7 @@ use chrono::NaiveDateTime;
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Task {
     pub id: Uuid,
+    pub user_id: Uuid,
     pub title: String,
     pub typ: Option<String>,
     pub priority: Option<String>,

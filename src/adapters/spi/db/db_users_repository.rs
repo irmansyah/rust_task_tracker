@@ -2,20 +2,18 @@ use async_trait::async_trait;
 use bcrypt::{hash, DEFAULT_COST};
 use chrono::Utc;
 use diesel::prelude::*;
-use hmac::{Hmac, Mac};
-use sha2::Sha256;
-use std::collections::HashSet;
 use std::error::Error;
 use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::adapters::api::users::users_payloads::*;
 use crate::application::mappers::db_mapper::DbMapper;
-use crate::application::utils::access_control::extractors::claims::{generate_token, Claims, Permission, Role};
+use crate::application::utils::access_control::auth_usecase::AuthUseCase;
 use crate::application::utils::validate_params;
+use crate::domain::user_entity::UserAllEntity;
 use crate::{application::repositories::users_repository_abstract::UsersRepositoryAbstract, domain::user_entity::UserEntity};
 
-use super::db_users_mappers::UserDbMapper;
+use super::db_users_mappers::{UserAllDbMapper, UserDbMapper};
 use super::schema::users::{self, *};
 use super::user_model::*;
 use crate::adapters::spi::db::{db_connection::DbConnection, schema::users::dsl::*};
@@ -82,30 +80,9 @@ impl UsersRepositoryAbstract for UsersRepository {
         if !bcrypt::verify(data_password, &user.password_hash).unwrap() {
             return Err(String::from("Invalid email or password!").into());
         }
-        // let data_access_token = match jwt::encode(user.id.to_string()) {
-        //     Ok(token) => Ok(token),
-        //     Err(_) => Err(String::from("Error generating token!")),
-        // };
-        //
-        // let jwt_secret: Hmac<Sha256> = Hmac::new_from_slice(std::env::var("JWT_SECRET").expect("JWT_SECRET must be set!").as_bytes()).unwrap();
-        // let claims = AccessTokenClaims {
-        //     id: user.id.to_string(),
-        //     exp: chrono::Utc::now().timestamp() + 3600 * 24,
-        // };
-        // let data_access_token = claims.sign_with_key(&jwt_secret).unwrap_or_default();
+        let permissions = AuthUseCase::check_role(&user.role);
 
-        let jwt_secret_string = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set!");
-        let jwt_secret = jwt_secret_string.as_bytes();
-
-        // Define some specific permissions
-        let mut permissions = HashSet::new();
-        permissions.insert(Permission::Read("admin-messages".to_string()));
-        permissions.insert(Permission::Read("author-messages".to_string()));
-        permissions.insert(Permission::Read("user-messages".to_string()));
-
-        let data_role = Role::Admin;
-
-        let data_access_token = generate_token(jwt_secret, &user.id.to_string(), data_role.clone(), Some(permissions.clone())).unwrap_or_default();
+        let data_access_token = AuthUseCase::generate_token(&user.id.to_string(), &user.role, Some(permissions.clone())).unwrap_or_default();
 
         let target = users.filter(id.eq(user.id));
         let result = diesel::update(target)
@@ -121,13 +98,12 @@ impl UsersRepositoryAbstract for UsersRepository {
 
     async fn update_one_user(&self, user_payload: &UserUpdatePayload) -> Result<UserEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
-        let user_id = Uuid::parse_str(&user_payload.user_id).unwrap();
+        let user_id = Uuid::parse_str(&user_payload.user_id)?;
         let target = users.filter(id.eq(user_id));
 
         let result = diesel::update(target)
             .set((
                 user_payload.username.clone().map(|data| username.eq(data.to_string())),
-                // user_payload.password.clone().map(|data| password_hash.eq(data.to_string())),
                 user_payload.role.clone().map(|data| role.eq(data.to_string())),
                 updated_at.eq(Utc::now().naive_utc().clone()),
             ))
@@ -142,7 +118,7 @@ impl UsersRepositoryAbstract for UsersRepository {
 
     async fn get_user_by_id(&self, user_payload: &UserIdPayload) -> Result<UserEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
-        let user_id = Uuid::parse_str(&user_payload.user_id).unwrap();
+        let user_id = Uuid::parse_str(&user_payload.user_id)?;
         let result = users.filter(id.eq(user_id)).get_result::<User>(&mut conn);
 
         match result {
@@ -153,11 +129,7 @@ impl UsersRepositoryAbstract for UsersRepository {
 
     async fn delete_user_by_id(&self, user_payload: &UserIdPayload) -> Result<UserEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
-        let user_id = Uuid::parse_str(&user_payload.user_id).unwrap_or_default();
-        // let user_id = match decode(user_payload.user_id) {
-        //     Ok(data_id) => data_id,
-        //     Err(_) => Err(String::from("Invalid token!")),
-        // };
+        let user_id = Uuid::parse_str(&user_payload.user_id)?;
         let target_user = users::table.filter(users::id.eq(user_id));
         let result = diesel::delete(target_user).get_result::<User>(&mut conn);
 
@@ -167,12 +139,12 @@ impl UsersRepositoryAbstract for UsersRepository {
         }
     }
 
-    async fn get_all_users(&self) -> Result<Vec<UserEntity>, Box<dyn Error>> {
+    async fn get_all_users(&self) -> Result<Vec<UserAllEntity>, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
         let results = users.load::<User>(&mut conn);
 
         match results {
-            Ok(models) => Ok(models.into_iter().map(UserDbMapper::to_entity).collect::<Vec<UserEntity>>()),
+            Ok(models) => Ok(models.into_iter().map(UserAllDbMapper::to_entity).collect::<Vec<UserAllEntity>>()),
             Err(e) => Err(Box::new(e)),
         }
     }

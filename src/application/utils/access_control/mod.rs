@@ -1,3 +1,3 @@
 pub mod extractors;
 pub mod middlewares;
-pub mod messages;
+pub mod auth_usecase;

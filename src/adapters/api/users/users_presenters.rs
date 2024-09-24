@@ -14,7 +14,10 @@ pub struct UserPresenter {
     pub created_at: i64,
 }
 
-// #[derive(Serialize, Deserialize, Debug)]
-// pub struct UserLoginPresenter {
-//     pub token: String,
-// }
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserAllPresenter {
+    pub user_id: String,
+    pub username: String,
+    pub email: String,
+    pub role: String,
+}

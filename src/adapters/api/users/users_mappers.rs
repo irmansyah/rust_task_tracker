@@ -1,10 +1,10 @@
 use chrono::NaiveDateTime;
 
 use crate::application::mappers::api_mapper::ApiMapper;
-use crate::domain::user_entity::UserEntity;
+use crate::domain::user_entity::{UserAllEntity, UserEntity};
 
-use super::users_payloads::UserRegisterPayload;
-use super::users_presenters::UserPresenter;
+use super::users_payloads::{UserPayload, UserRegisterPayload};
+use super::users_presenters::{UserAllPresenter, UserPresenter};
 
 pub struct UserPresenterMapper {}
 
@@ -30,6 +30,22 @@ impl ApiMapper<UserEntity, UserPresenter, UserRegisterPayload> for UserPresenter
         panic!("not implemented");
     }
 }
+
+impl ApiMapper<UserAllEntity, UserAllPresenter, UserPayload> for UserAllPresenterMapper {
+    fn to_api(entity: UserAllEntity) -> UserAllPresenter {
+        UserAllPresenter {
+            user_id: entity.id,
+            username: entity.username,
+            email: entity.email,
+            role: entity.role,
+        }
+    }
+
+    fn to_entity(_payload: UserPayload) -> UserAllEntity {
+        panic!("not implemented");
+    }
+}
+
 
 fn naive_datetime_to_unixtimemillis(datetime: NaiveDateTime) -> i64 {
     // Get the Unix timestamp in seconds and convert to milliseconds

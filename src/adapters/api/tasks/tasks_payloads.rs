@@ -1,5 +1,6 @@
 use std::fmt;
 
+use actix_web::web;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -129,18 +130,30 @@ pub struct TaskIdPayload {
 }
 
 impl TaskIdPayload {
-    pub fn new(
-        task_id: String,
-    ) -> Self {
-        TaskIdPayload {
-            task_id,
-        }
+    pub fn new(task_id: String) -> Self {
+        TaskIdPayload { task_id }
     }
 }
 
+#[derive(Serialize, Deserialize, Default, Debug)]
+pub struct TaskDataPayload {
+    pub task_id: Option<String>,
+    pub user_id: Option<String>,
+}
+
+impl TaskDataPayload {
+    pub fn new(task_id: Option<String>, user_id: Option<String>) -> Self {
+        TaskDataPayload { task_id, user_id }
+    }
+
+    pub fn from_option(option: Option<web::Json<TaskDataPayload>>) -> Self {
+        option.map_or_else(|| TaskDataPayload::default(), |json| json.into_inner())
+    }
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TaskCreatePayload {
+    pub user_id: String,
     pub title: String,
     pub typ: Option<TaskTypePayload>,
     pub priority: Option<TaskPriorityPayload>,
@@ -154,6 +167,7 @@ pub struct TaskCreatePayload {
 
 impl TaskCreatePayload {
     pub fn new(
+        user_id: String,
         title: String,
         typ: Option<TaskTypePayload>,
         priority: Option<TaskPriorityPayload>,
@@ -165,6 +179,7 @@ impl TaskCreatePayload {
         task_list: Option<Vec<String>>,
     ) -> Self {
         TaskCreatePayload {
+            user_id,
             title,
             typ,
             priority,
@@ -181,6 +196,7 @@ impl TaskCreatePayload {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TaskUpdatePayload {
     pub task_id: String,
+    pub user_id: String,
     pub title: Option<String>,
     pub typ: Option<TaskTypePayload>,
     pub priority: Option<TaskPriorityPayload>,
@@ -195,6 +211,7 @@ pub struct TaskUpdatePayload {
 impl TaskUpdatePayload {
     pub fn new(
         task_id: String,
+        user_id: String,
         title: Option<String>,
         typ: Option<TaskTypePayload>,
         priority: Option<TaskPriorityPayload>,
@@ -207,6 +224,7 @@ impl TaskUpdatePayload {
     ) -> Self {
         TaskUpdatePayload {
             task_id,
+            user_id,
             title,
             typ,
             priority,
@@ -221,4 +239,3 @@ impl TaskUpdatePayload {
 }
 
 pub struct TaskPayload {}
-

@@ -19,6 +19,7 @@ impl ApiMapper<TaskEntity, TaskPresenter, TaskIdPayload> for TaskPresenterMapper
     fn to_api(entity: TaskEntity) -> TaskPresenter {
         TaskPresenter {
             task_id: entity.id,
+            user_id: entity.user_id,
             title: entity.title,
             typ: entity.typ,
             priority: entity.priority,
@@ -42,6 +43,7 @@ impl ApiMapper<TaskEntity, TaskPresenter, TaskCreatePayload> for TaskCreatePrese
     fn to_api(entity: TaskEntity) -> TaskPresenter {
         TaskPresenter {
             task_id: entity.id,
+            user_id: entity.user_id,
             title: entity.title,
             typ: entity.typ,
             priority: entity.priority,
@@ -65,6 +67,7 @@ impl ApiMapper<TaskEntity, TaskPresenter, TaskUpdatePayload> for TaskUpdatePrese
     fn to_api(entity: TaskEntity) -> TaskPresenter {
         TaskPresenter {
             task_id: entity.id,
+            user_id: entity.user_id,
             title: entity.title,
             typ: entity.typ,
             priority: entity.priority,
@@ -88,6 +91,7 @@ impl ApiMapper<TaskAllEntity, TaskAllPresenter, TaskPayload> for TaskAllPresente
     fn to_api(entity: TaskAllEntity) -> TaskAllPresenter {
         TaskAllPresenter {
             task_id: entity.id,
+            user_id: entity.user_id,
             title: entity.title,
             description: entity.description,
             updated_at: naive_datetime_to_unixtimemillis(entity.updated_at),

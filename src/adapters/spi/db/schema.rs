@@ -26,6 +26,7 @@ diesel::table! {
 diesel::table! {
     tasks (id) {
         id -> Uuid,
+        user_id -> Uuid,
         title -> Text,
         typ -> Nullable<Text>,
         priority -> Nullable<Text>,

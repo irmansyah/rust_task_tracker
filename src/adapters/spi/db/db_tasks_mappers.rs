@@ -13,6 +13,7 @@ impl DbMapper<TaskEntity, Task> for TaskDbMapper {
     fn to_db(entity: TaskEntity) -> Task {
         Task {
             id: Uuid::parse_str(&entity.id).unwrap_or_default(),
+            user_id: Uuid::parse_str(&entity.user_id).unwrap_or_default(),
             title: entity.title,
             typ: Some(entity.typ),
             status: Some(entity.status),
@@ -30,6 +31,7 @@ impl DbMapper<TaskEntity, Task> for TaskDbMapper {
     fn to_entity(model: Task) -> TaskEntity {
         TaskEntity {
             id: model.id.to_string(),
+            user_id: model.user_id.to_string(),
             title: model.title,
             typ: model.typ.unwrap_or_default(),
             priority: model.priority.unwrap_or_default(),
@@ -49,6 +51,7 @@ impl DbMapper<TaskAllEntity, Task> for TaskAllDbMapper {
     fn to_db(entity: TaskAllEntity) -> Task {
         Task {
             id: Uuid::parse_str(&entity.id).unwrap_or_default(),
+            user_id: Uuid::parse_str(&entity.user_id).unwrap_or_default(),
             title: entity.title,
             description: entity.description,
             typ: todo!(),
@@ -66,6 +69,7 @@ impl DbMapper<TaskAllEntity, Task> for TaskAllDbMapper {
     fn to_entity(model: Task) -> TaskAllEntity {
         TaskAllEntity {
             id: model.id.to_string(),
+            user_id: model.user_id.to_string(),
             title: model.title,
             description: model.description,
             updated_at: model.updated_at,
