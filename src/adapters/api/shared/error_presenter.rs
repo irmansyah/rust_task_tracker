@@ -1,32 +1,52 @@
+use crate::application::utils::access_control::extractors::claims::ClientError;
 use crate::domain::error::ApiError;
 use actix_web::{error::ResponseError, http::StatusCode, HttpResponse};
 use derive_more::Display;
-use serde::Deserialize;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ErrorPresenter {
     pub code: u16,
     pub message: String,
+    pub data: Option<serde_json::Value>,
+}
+
+// #[derive(Error, Debug, Display)]
+// pub struct ErrorMessage {
+//     #[serde(skip_serializing_if = "Option::is_none")]
+//     pub code: Option<StatusCode>,
+//     #[serde(skip_serializing_if = "Option::is_none")]
+//     pub message: Option<String>,
+//     pub data: Option<serde_json::Value>,
+// }
+
+#[derive(Serialize)]
+pub struct ErrorMessage {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub code: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
+    pub data: Option<serde_json::Value>,
 }
 
 #[derive(Error, Debug, Display)]
-#[display(fmt = "{:?}", error)]
+#[display(fmt = "{:?}", message)]
 pub struct ErrorResponse {
     code: StatusCode,
-    error: String,
+    message: String,
+    data: Option<serde_json::Value>,
 }
 
 impl Default for ErrorResponse {
     fn default() -> Self {
         ErrorResponse {
             code: StatusCode::UNAUTHORIZED,
-            error: "Permission denied".to_string(),
+            message: "Permission denied".to_string(),
+            data: None,
         }
     }
 }
-
 
 impl ResponseError for ErrorResponse {
     fn status_code(&self) -> StatusCode {
@@ -37,7 +57,8 @@ impl ResponseError for ErrorResponse {
         let code = self.status_code();
         let error_response = ErrorPresenter {
             code: code.as_u16(),
-            message: self.error.clone(),
+            message: self.message.clone(),
+            data: None,
         };
         HttpResponse::build(code).json(error_response)
     }
@@ -48,24 +69,60 @@ impl ErrorResponse {
         match e.get_error_code() {
             400 => ErrorResponse {
                 code: StatusCode::BAD_REQUEST,
-                error: e.get_error_message(),
+                message: e.get_error_message(),
+                data: None,
             },
             401 => ErrorResponse {
                 code: StatusCode::UNAUTHORIZED,
-                error: e.get_error_message(),
+                message: e.get_error_message(),
+                data: None,
             },
             403 => ErrorResponse {
                 code: StatusCode::FORBIDDEN,
-                error: e.get_error_message(),
+                message: e.get_error_message(),
+                data: None,
             },
             404 => ErrorResponse {
                 code: StatusCode::NOT_FOUND,
-                error: e.get_error_message(),
+                message: e.get_error_message(),
+                data: None,
             },
             _ => ErrorResponse {
                 code: StatusCode::INTERNAL_SERVER_ERROR,
-                error: String::from("Error: an unknown error occured"),
+                message: String::from("Error: an unknown error occured"),
+                data: None,
             },
         }
+    }
+}
+
+impl ResponseError for ClientError {
+    fn error_response(&self) -> HttpResponse {
+        match self {
+            Self::Authentication(_) => HttpResponse::Unauthorized().json(ErrorMessage {
+                code: Some(401),
+                message: Some("Requires authentication".to_string()),
+                data: None,
+            }),
+            Self::Decode(_) => HttpResponse::Unauthorized().json(ErrorMessage {
+                code: Some(401),
+                message: Some("Bad credentials".to_string()),
+                data: None,
+            }),
+            Self::NotFound(msg) => HttpResponse::Unauthorized().json(ErrorMessage {
+                code: Some(401),
+                message: Some(msg.to_string()),
+                data: None,
+            }),
+            Self::UnsupportedAlgortithm(_) => HttpResponse::Unauthorized().json(ErrorMessage {
+                code: Some(401),
+                message: Some("Bad credentials".to_string()),
+                data: None,
+            }),
+        }
+    }
+
+    fn status_code(&self) -> StatusCode {
+        StatusCode::UNAUTHORIZED
     }
 }

@@ -1,11 +1,8 @@
-use actix_web::{error::ResponseError, http::StatusCode, HttpResponse};
 use actix_web_httpauth::headers::www_authenticate::bearer::Bearer;
 use derive_more::Display;
 use jsonwebtoken::jwk::AlgorithmParameters;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashSet, fmt, str::FromStr};
-
-use crate::application::utils::types::ErrorMessage;
 
 // Define roles with their associated permissions
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
@@ -65,18 +62,6 @@ pub struct Claims {
     pub exp: usize,                               // Expiry timestamp
 }
 
-impl Claims {
-    // Check if the user has the required role and permissions
-    pub fn validate_roles(&self, allowed_roles: &[Role]) -> bool {
-        allowed_roles.contains(&self.role)
-    }
-
-    // Check if the user has the required permissions
-    pub fn validate_permissions(&self, required_permissions: &HashSet<Permission>) -> bool {
-        self.permissions.as_ref().map_or(false, |permissions| permissions.is_superset(required_permissions))
-    }
-}
-
 #[derive(Debug, Display)]
 pub enum ClientError {
     #[display(fmt = "authentication")]
@@ -89,33 +74,15 @@ pub enum ClientError {
     UnsupportedAlgortithm(AlgorithmParameters),
 }
 
-impl ResponseError for ClientError {
-    fn error_response(&self) -> HttpResponse {
-        match self {
-            Self::Authentication(_) => HttpResponse::Unauthorized().json(ErrorMessage {
-                error: None,
-                error_description: None,
-                message: "Requires authentication".to_string(),
-            }),
-            Self::Decode(_) => HttpResponse::Unauthorized().json(ErrorMessage {
-                error: Some("invalid_token".to_string()),
-                error_description: Some("Authorization header value must follow this format: Bearer access-token".to_string()),
-                message: "Bad credentials".to_string(),
-            }),
-            Self::NotFound(msg) => HttpResponse::Unauthorized().json(ErrorMessage {
-                error: Some("invalid_token".to_string()),
-                error_description: Some(msg.to_string()),
-                message: "Bad credentials".to_string(),
-            }),
-            Self::UnsupportedAlgortithm(alg) => HttpResponse::Unauthorized().json(ErrorMessage {
-                error: Some("invalid_token".to_string()),
-                error_description: Some(format!("Unsupported encryption algortithm expected RSA got {:?}", alg)),
-                message: "Bad credentials".to_string(),
-            }),
-        }
+
+impl Claims {
+    // Check if the user has the required role and permissions
+    pub fn validate_roles(&self, allowed_roles: &[Role]) -> bool {
+        allowed_roles.contains(&self.role)
     }
 
-    fn status_code(&self) -> StatusCode {
-        StatusCode::UNAUTHORIZED
+    // Check if the user has the required permissions
+    pub fn validate_permissions(&self, required_permissions: &HashSet<Permission>) -> bool {
+        self.permissions.as_ref().map_or(false, |permissions| permissions.is_superset(required_permissions))
     }
 }
