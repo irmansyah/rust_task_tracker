@@ -7,6 +7,7 @@ use std::fmt;
 pub enum UserRolePayload {
     SuperAdmin,
     Admin,
+    Author,
     User
 }
 
@@ -21,7 +22,27 @@ impl fmt::Display for UserRolePayload {
         match self {
             UserRolePayload::SuperAdmin => write!(f, "super_admin"),
             UserRolePayload::Admin => write!(f, "admin"),
+            UserRolePayload::Author => write!(f, "author"),
             UserRolePayload::User => write!(f, "user"),
+        }
+    }
+}
+impl UserRolePayload {
+    pub fn next(self) -> Option<UserRolePayload> {
+        match self {
+            UserRolePayload::User => Some(UserRolePayload::Author),
+            UserRolePayload::Author => Some(UserRolePayload::Author),
+            UserRolePayload::Admin => Some(UserRolePayload::Admin),
+            UserRolePayload::SuperAdmin => None,  // No further promotion
+        }
+    }
+
+    pub fn previous(self) -> Option<UserRolePayload> {
+        match self {
+            UserRolePayload::SuperAdmin => Some(UserRolePayload::Admin),
+            UserRolePayload::Admin => Some(UserRolePayload::Admin),
+            UserRolePayload::Author => Some(UserRolePayload::User),
+            UserRolePayload::User => None,  // No demotion from User
         }
     }
 }
@@ -69,14 +90,12 @@ impl UserRegisterPayload {
 pub struct UserLoginPayload {
     pub email: String,
     pub password: String,
-    // pub role: Option<UserRolePayload>,
 }
 
 impl UserLoginPayload {
     pub fn new(
         email: String, 
         password: String, 
-        // role: Option<UserRolePayload>, 
     ) -> Self {
         UserLoginPayload {
             email,

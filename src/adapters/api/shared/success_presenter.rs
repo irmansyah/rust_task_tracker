@@ -1,17 +1,18 @@
 use actix_web::HttpResponse;
+use reqwest::StatusCode;
 use serde::Serialize;
 
 #[derive(Serialize)]
-pub struct BaseResponse<T> {
+pub struct SuccessResponse<T> {
     pub code: u16,
     pub message: String,
     pub data: T,
 }
 
-impl<T: Serialize> BaseResponse<T> {
-    pub fn new(code: u16, message: &str, data: T) -> Self {
-        BaseResponse {
-            code,
+impl<T: Serialize> SuccessResponse<T> {
+    pub fn new(code: StatusCode, message: &str, data: T) -> Self {
+        SuccessResponse {
+            code: code.as_u16(),
             message: message.to_string(),
             data,
         }

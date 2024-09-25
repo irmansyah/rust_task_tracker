@@ -22,6 +22,7 @@ impl TasksRepositoryAbstract for TasksRepository {
     async fn post_one_task(&self, task_payload: &TaskCreatePayload) -> Result<TaskEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
 
+        let data_user_id_uuid = Uuid::parse_str(&task_payload.user_id.clone().unwrap_or_default()).unwrap_or_default();
         let data_title = task_payload.title.clone();
         let data_typ = task_payload.typ.clone().unwrap_or_default().to_string();
         let data_priority = task_payload.priority.clone().unwrap_or_default().to_string();
@@ -33,6 +34,7 @@ impl TasksRepositoryAbstract for TasksRepository {
         let data_task_list: Option<Vec<&str>> = task_payload.task_list.as_ref().map(|vec| vec.iter().map(|s| s.as_str()).collect());
 
         let new_task = TaskNew {
+            user_id: &data_user_id_uuid,
             title: &data_title,
             typ: &data_typ,
             priority: &data_priority,
@@ -55,13 +57,13 @@ impl TasksRepositoryAbstract for TasksRepository {
     async fn update_one_task(&self, task_payload: &TaskUpdatePayload) -> Result<TaskEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
         let task_id_uuid = Uuid::parse_str(&task_payload.task_id).unwrap();
-        let user_id_uuid = Uuid::parse_str(&task_payload.user_id).ok();
+        let user_id_uuid = Uuid::parse_str(&task_payload.user_id.clone().unwrap_or_default()).ok();
         let target = tasks.filter(id.eq(task_id_uuid));
         let data_task_list: Option<Vec<&str>> = task_payload.task_list.as_ref().map(|vec| vec.iter().map(|s| s.as_str()).collect());
 
         let result = diesel::update(target)
             .set((
-                user_id.eq(user_id_uuid.unwrap_or_default()),
+                user_id_uuid.clone().map(|data| user_id.eq(data)),
                 task_payload.title.clone().map(|data| title.eq(data)),
                 task_payload.typ.clone().map(|data| typ.eq(data.to_string())),
                 task_payload.priority.clone().map(|data| priority.eq(data.to_string())),

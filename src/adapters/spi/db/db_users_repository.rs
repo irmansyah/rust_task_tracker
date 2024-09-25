@@ -101,10 +101,16 @@ impl UsersRepositoryAbstract for UsersRepository {
         let user_id = Uuid::parse_str(&user_payload.user_id)?;
         let target = users.filter(id.eq(user_id));
 
+        let mut promote_role = user_payload.role.clone().unwrap_or_default();
+        if let Some(next_role) = promote_role.clone().next() {
+            promote_role = next_role;
+            println!("Promoted from: {} :: to: {}", &user_payload.role.clone().unwrap_or_default(), promote_role);
+        }
+
         let result = diesel::update(target)
             .set((
                 user_payload.username.clone().map(|data| username.eq(data.to_string())),
-                user_payload.role.clone().map(|data| role.eq(data.to_string())),
+                role.eq(promote_role.to_string()),
                 updated_at.eq(Utc::now().naive_utc().clone()),
             ))
             .returning(User::as_returning())

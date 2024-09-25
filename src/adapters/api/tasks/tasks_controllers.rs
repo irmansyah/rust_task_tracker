@@ -1,9 +1,9 @@
 use crate::{
     adapters::api::{
-        shared::{app_state::AppState, error_presenter::ErrorResponse, success_presenter::BaseResponse},
+        shared::{app_state::AppState, error_presenter::ErrorResponse, success_presenter::SuccessResponse},
         tasks::{
             tasks_mappers::*,
-            tasks_payloads::{TaskCreatePayload, TaskDataPayload, TaskIdPayload, TaskUpdatePayload},
+            tasks_payloads::{TaskCreatePayload, TaskDataPayload, TaskUpdatePayload},
             tasks_presenters::TaskAllPresenter,
         },
     },
@@ -21,10 +21,13 @@ use crate::{
     domain::{error::ApiError, task_entity::*},
 };
 use actix_web::{delete, get, patch, post, web, HttpResponse};
+use reqwest::StatusCode;
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
     cfg.service(post_one_task)
+        .service(post_one_task_own)
         .service(update_one_task)
+        .service(update_one_task_own)
         .service(get_all_tasks)
         .service(get_all_tasks_by_user_id)
         .service(get_all_tasks_by_user_id_own)
@@ -34,21 +37,27 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
         .service(delete_one_task_by_id_own);
 }
 
-#[post("/")]
+#[post("/one")]
 async fn post_one_task(data: web::Data<AppState>, claims: Claims, path: web::Json<TaskCreatePayload>) -> Result<HttpResponse, ErrorResponse> {
-    AuthCheckUseCase::check_permission_up_to_user(claims)?;
+    AuthCheckUseCase::check_permission_up_to_admin(claims)?;
     let task_payload = path.into_inner();
     let post_one_task_usecase = PostOneTaskUseCase::new(&task_payload, &data.tasks_repository);
 
     match post_one_task_usecase.execute().await {
-        Ok(task) => {
-            let response = BaseResponse {
-                code: 201,
-                message: "Task created successfully".to_string(),
-                data: TaskCreatePresenterMapper::to_api(task),
-            };
-            Ok(HttpResponse::Created().json(response))
-        }
+        Ok(task) => Ok(SuccessResponse::new(StatusCode::CREATED, "Task created successfully", TaskPresenterMapper::to_api(task)).to_http_response()),
+        Err(e) => Err(ErrorResponse::map_io_error(e)),
+    }
+}
+
+#[post("/one_own")]
+async fn post_one_task_own(data: web::Data<AppState>, claims: Claims, path: web::Json<TaskCreatePayload>) -> Result<HttpResponse, ErrorResponse> {
+    let mut task_payload = path.into_inner();
+    task_payload.user_id = Some(claims.sub.clone());
+    AuthCheckUseCase::check_permission_up_to_user(claims)?;
+    let post_one_task_usecase = PostOneTaskUseCase::new(&task_payload, &data.tasks_repository);
+
+    match post_one_task_usecase.execute().await {
+        Ok(task) => Ok(SuccessResponse::new(StatusCode::CREATED, "Task created successfully", TaskPresenterMapper::to_api(task)).to_http_response()),
         Err(e) => Err(ErrorResponse::map_io_error(e)),
     }
 }
@@ -61,8 +70,8 @@ async fn get_all_tasks(data: web::Data<AppState>, claims: Claims, path: Option<w
     let tasks: Result<Vec<TaskAllEntity>, ApiError> = get_all_tasks_usecase.execute().await;
 
     match tasks {
-        Ok(task) => Ok(BaseResponse::new(
-            200,
+        Ok(task) => Ok(SuccessResponse::new(
+            StatusCode::OK,
             "Tasks retrieved successfully",
             task.into_iter().map(TaskAllPresenterMapper::to_api).collect::<Vec<TaskAllPresenter>>(),
         )
@@ -79,8 +88,8 @@ async fn get_all_tasks_by_user_id(data: web::Data<AppState>, claims: Claims, pat
     let tasks: Result<Vec<TaskAllEntity>, ApiError> = get_all_tasks_usecase.execute().await;
 
     match tasks {
-        Ok(task) => Ok(BaseResponse::new(
-            200,
+        Ok(task) => Ok(SuccessResponse::new(
+            StatusCode::OK,
             "Tasks retrieved successfully",
             task.into_iter().map(TaskAllPresenterMapper::to_api).collect::<Vec<TaskAllPresenter>>(),
         )
@@ -98,8 +107,8 @@ async fn get_all_tasks_by_user_id_own(data: web::Data<AppState>, claims: Claims,
     let tasks: Result<Vec<TaskAllEntity>, ApiError> = get_all_tasks_usecase.execute().await;
 
     match tasks {
-        Ok(task) => Ok(BaseResponse::new(
-            200,
+        Ok(task) => Ok(SuccessResponse::new(
+            StatusCode::OK,
             "Tasks retrieved successfully",
             task.into_iter().map(TaskAllPresenterMapper::to_api).collect::<Vec<TaskAllPresenter>>(),
         )
@@ -110,12 +119,25 @@ async fn get_all_tasks_by_user_id_own(data: web::Data<AppState>, claims: Claims,
 
 #[patch("/one")]
 async fn update_one_task(data: web::Data<AppState>, claims: Claims, path: web::Json<TaskUpdatePayload>) -> Result<HttpResponse, ErrorResponse> {
-    AuthCheckUseCase::check_permission_up_to_user(claims)?;
+    AuthCheckUseCase::check_permission_up_to_admin(claims)?;
     let task_payload = path.into_inner();
     let update_one_task_usecase = UpdateOneTaskUseCase::new(&task_payload, &data.tasks_repository);
 
     match update_one_task_usecase.execute().await {
-        Ok(task) => Ok(BaseResponse::new(200, "Task updated successfully", TaskPresenterMapper::to_api(task)).to_http_response()),
+        Ok(task) => Ok(SuccessResponse::new(StatusCode::OK, "Task updated successfully", TaskPresenterMapper::to_api(task)).to_http_response()),
+        Err(e) => Err(ErrorResponse::map_io_error(e)),
+    }
+}
+
+#[patch("/one_own")]
+async fn update_one_task_own(data: web::Data<AppState>, claims: Claims, path: web::Json<TaskUpdatePayload>) -> Result<HttpResponse, ErrorResponse> {
+    let mut task_payload = path.into_inner();
+    task_payload.user_id = Some(claims.sub.clone());
+    AuthCheckUseCase::check_permission_up_to_user(claims)?;
+    let update_one_task_usecase = UpdateOneTaskUseCase::new(&task_payload, &data.tasks_repository);
+
+    match update_one_task_usecase.execute().await {
+        Ok(task) => Ok(SuccessResponse::new(StatusCode::OK, "Task updated successfully", TaskPresenterMapper::to_api(task)).to_http_response()),
         Err(e) => Err(ErrorResponse::map_io_error(e)),
     }
 }
@@ -127,7 +149,7 @@ async fn get_one_task_by_id(data: web::Data<AppState>, claims: Claims, path: web
     let get_one_task_by_id_usecase = GetOneTaskByIdUseCase::new(&task_payload, &data.tasks_repository);
 
     match get_one_task_by_id_usecase.execute().await {
-        Ok(task) => Ok(BaseResponse::new(200, "Task retrieved successfully", TaskPresenterMapper::to_api(task)).to_http_response()),
+        Ok(task) => Ok(SuccessResponse::new(StatusCode::OK, "Task retrieved successfully", TaskPresenterMapper::to_api(task)).to_http_response()),
         Err(e) => Err(ErrorResponse::map_io_error(e)),
     }
 }
@@ -140,7 +162,7 @@ async fn get_one_task_by_id_own(data: web::Data<AppState>, claims: Claims, path:
     let get_one_task_by_id_usecase = GetOneTaskByIdUseCase::new(&task_payload, &data.tasks_repository);
 
     match get_one_task_by_id_usecase.execute().await {
-        Ok(task) => Ok(BaseResponse::new(200, "Task retrieved successfully", TaskPresenterMapper::to_api(task)).to_http_response()),
+        Ok(task) => Ok(SuccessResponse::new(StatusCode::OK, "Task retrieved successfully", TaskPresenterMapper::to_api(task)).to_http_response()),
         Err(e) => Err(ErrorResponse::map_io_error(e)),
     }
 }
@@ -152,7 +174,7 @@ async fn delete_one_task_by_id(data: web::Data<AppState>, claims: Claims, path: 
     let delete_one_task_usecase = DeleteOneTaskByIdUseCase::new(&task_payload, &data.tasks_repository);
 
     match delete_one_task_usecase.execute().await {
-        Ok(task) => Ok(BaseResponse::new(200, "Task deleted successfully", TaskPresenterMapper::to_api(task)).to_http_response()),
+        Ok(task) => Ok(SuccessResponse::new(StatusCode::OK, "Task deleted successfully", TaskPresenterMapper::to_api(task)).to_http_response()),
         Err(e) => Err(ErrorResponse::map_io_error(e)),
     }
 }
@@ -165,7 +187,7 @@ async fn delete_one_task_by_id_own(data: web::Data<AppState>, claims: Claims, pa
     let delete_one_task_usecase = DeleteOneTaskByIdUseCase::new(&task_payload, &data.tasks_repository);
 
     match delete_one_task_usecase.execute().await {
-        Ok(task) => Ok(BaseResponse::new(200, "Task deleted successfully", TaskPresenterMapper::to_api(task)).to_http_response()),
+        Ok(task) => Ok(SuccessResponse::new(StatusCode::OK, "Task deleted successfully", TaskPresenterMapper::to_api(task)).to_http_response()),
         Err(e) => Err(ErrorResponse::map_io_error(e)),
     }
 }

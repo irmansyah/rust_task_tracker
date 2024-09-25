@@ -100,22 +100,22 @@ impl ResponseError for ClientError {
     fn error_response(&self) -> HttpResponse {
         match self {
             Self::Authentication(_) => HttpResponse::Unauthorized().json(ErrorMessage {
-                code: Some(401),
+                code: Some(StatusCode::UNAUTHORIZED.as_u16()),
                 message: Some("Requires authentication".to_string()),
                 data: None,
             }),
             Self::Decode(_) => HttpResponse::Unauthorized().json(ErrorMessage {
-                code: Some(401),
+                code: Some(StatusCode::UNAUTHORIZED.as_u16()),
                 message: Some("Bad credentials".to_string()),
                 data: None,
             }),
             Self::NotFound(msg) => HttpResponse::Unauthorized().json(ErrorMessage {
-                code: Some(401),
+                code: Some(StatusCode::UNAUTHORIZED.as_u16()),
                 message: Some(msg.to_string()),
                 data: None,
             }),
             Self::UnsupportedAlgortithm(_) => HttpResponse::Unauthorized().json(ErrorMessage {
-                code: Some(401),
+                code: Some(StatusCode::UNAUTHORIZED.as_u16()),
                 message: Some("Bad credentials".to_string()),
                 data: None,
             }),

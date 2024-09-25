@@ -42,7 +42,7 @@ mod tests {
         let mut task_repository = MockTasksRepositoryAbstract::new();
         let payload = TaskUpdatePayload::new(
             String::from("id1"),
-            String::from("id1"),
+            Some(String::from("id1")),
             Some(String::from("task1")),
             Some(TaskTypePayload::Work),
             Some(TaskPriorityPayload::Low),
@@ -74,7 +74,7 @@ mod tests {
         let mut task_repository = MockTasksRepositoryAbstract::new();
         let payload = TaskUpdatePayload::new(
             String::from("id1"),
-            String::from("id1"),
+            Some(String::from("id1")),
             Some(String::from("task1")),
             Some(TaskTypePayload::Work),
             Some(TaskPriorityPayload::Low),

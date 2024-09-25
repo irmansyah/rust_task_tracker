@@ -25,6 +25,7 @@ pub struct Task {
 #[derive(Insertable, AsChangeset)]
 #[diesel(table_name = tasks)]
 pub struct TaskNew<'a> {
+    pub user_id: &'a Uuid,
     pub title: &'a str,
     pub typ: &'a str,
     pub priority: &'a str,
@@ -39,6 +40,7 @@ pub struct TaskNew<'a> {
 #[derive(AsChangeset)]
 #[diesel(table_name = tasks)]
 pub struct TaskUpdate<'a> {
+    pub user_id: Option<&'a Uuid>,
     pub title: &'a str,
     pub typ: Option<&'a str>,
     pub priority: Option<&'a str>,

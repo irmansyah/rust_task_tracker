@@ -44,7 +44,7 @@ mod tests {
         // given the "all task tasks" usecase repo with an unexpected random error
         let mut task_repository = MockTasksRepositoryAbstract::new();
         let payload = TaskCreatePayload::new(
-            String::from("task1"),
+            Some(String::from("task1")),
             String::from("user1"),
             Some(TaskTypePayload::Work),
             Some(TaskPriorityPayload::Low),
@@ -75,7 +75,7 @@ mod tests {
         // given the "one task task by id" usecase repo returning one result
         let mut task_repository = MockTasksRepositoryAbstract::new();
         let payload = TaskCreatePayload::new(
-            String::from("task1"),
+            Some(String::from("task1")),
             String::from("user1"),
             Some(TaskTypePayload::Work),
             Some(TaskPriorityPayload::Low),

@@ -153,7 +153,7 @@ impl TaskDataPayload {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TaskCreatePayload {
-    pub user_id: String,
+    pub user_id: Option<String>,
     pub title: String,
     pub typ: Option<TaskTypePayload>,
     pub priority: Option<TaskPriorityPayload>,
@@ -167,7 +167,7 @@ pub struct TaskCreatePayload {
 
 impl TaskCreatePayload {
     pub fn new(
-        user_id: String,
+        user_id: Option<String>,
         title: String,
         typ: Option<TaskTypePayload>,
         priority: Option<TaskPriorityPayload>,
@@ -196,7 +196,7 @@ impl TaskCreatePayload {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TaskUpdatePayload {
     pub task_id: String,
-    pub user_id: String,
+    pub user_id: Option<String>,
     pub title: Option<String>,
     pub typ: Option<TaskTypePayload>,
     pub priority: Option<TaskPriorityPayload>,
@@ -211,7 +211,7 @@ pub struct TaskUpdatePayload {
 impl TaskUpdatePayload {
     pub fn new(
         task_id: String,
-        user_id: String,
+        user_id: Option<String>,
         title: Option<String>,
         typ: Option<TaskTypePayload>,
         priority: Option<TaskPriorityPayload>,
