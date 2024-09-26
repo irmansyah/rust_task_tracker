@@ -12,7 +12,7 @@ pub struct User {
     pub email: String,
     pub password_hash: String,
     pub role: String,
-    pub access_token: String,
+    pub refresh_token: String,
     pub fcm_token: String,
     pub last_login: NaiveDateTime,
     pub updated_at: NaiveDateTime,

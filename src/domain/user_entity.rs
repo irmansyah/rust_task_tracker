@@ -7,7 +7,8 @@ pub struct UserEntity {
     pub email: String,
     pub password: String,
     pub role: String,
-    pub access_token: String,
+    pub refresh_token: Option<String>,
+    pub access_token: Option<String>,
     pub fcm_token: String,
     pub last_login: NaiveDateTime,
     pub updated_at: NaiveDateTime,
@@ -21,7 +22,8 @@ impl UserEntity {
         email: String,
         password: String,
         role: String,
-        access_token: String,
+        refresh_token: Option<String>,
+        access_token: Option<String>,
         fcm_token: String,
         last_login: NaiveDateTime,
         updated_at: NaiveDateTime,
@@ -33,6 +35,7 @@ impl UserEntity {
             email,
             password,
             role,
+            refresh_token,
             access_token,
             fcm_token,
             last_login,
@@ -62,6 +65,21 @@ impl UserAllEntity {
             username,
             email,
             role,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct UserAccessTokenEntity {
+    pub access_token: String,
+}
+
+impl UserAccessTokenEntity {
+    pub fn new(
+        access_token: String,
+    ) -> Self {
+        UserAccessTokenEntity {
+            access_token,
         }
     }
 }

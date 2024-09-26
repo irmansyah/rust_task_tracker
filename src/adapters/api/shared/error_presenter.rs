@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::application::utils::access_control::extractors::claims::ClientError;
 use crate::domain::error::ApiError;
 use actix_web::{error::ResponseError, http::StatusCode, HttpResponse};
@@ -47,6 +49,17 @@ impl Default for ErrorResponse {
         }
     }
 }
+
+// #[derive(Debug)]
+// struct StringError(String);
+
+// impl fmt::Display for StringError {
+//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//         write!(f, "{}", self.0)
+//     }
+// }
+
+// impl std::error::Error for StringError {}
 
 impl ResponseError for ErrorResponse {
     fn status_code(&self) -> StatusCode {

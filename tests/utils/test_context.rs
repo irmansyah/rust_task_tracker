@@ -1,9 +1,13 @@
-use crate::integration_tests::fixtures::fixtures_run;
-use tasktracker_backend::adapters::spi::db::db_connection::DbConnection;
-use diesel::RunQueryDsl;
-use fixtures_run::execute_imports;
+use std::error::Error;
 
-embed_migrations!("./migrations");
+use crate::integration_tests::fixtures::fixtures_run;
+use diesel::RunQueryDsl;
+use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
+use fixtures_run::execute_imports;
+use tasktracker_backend::adapters::spi::db::db_connection::DbConnection;
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
+
+// embed_migrations!("./migrations");
 
 pub struct TestContextPostgreSQL {
     pub base_url: String,
@@ -11,28 +15,30 @@ pub struct TestContextPostgreSQL {
 }
 
 impl TestContextPostgreSQL {
-    pub fn new(base_url: &str, db_name: &str) -> Self {
+    pub fn new(base_url: &str, db_name: &str) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         // connect to "postgres" db to be able to create our test database.
         let db_connection_postgres_db = DbConnection { db_name: "postgres".to_string() };
-        let conn_postgres_db = db_connection_postgres_db.get_pool().get().expect("couldn't get db connection from pool");
+        let mut conn_postgres_db = db_connection_postgres_db.get_pool().get().expect("couldn't get db connection from pool");
 
         let query = diesel::sql_query(format!("CREATE DATABASE {};", db_name).as_str());
         query.execute(&conn_postgres_db).unwrap_or_else(|_| panic!("couldn't create database {}", db_name));
 
         // connect to the "test" db created above
         let db_connection_test_db = DbConnection { db_name: db_name.to_string() };
-        let conn_test_db = db_connection_test_db.get_pool().get().expect("couldn't get db connection from pool");
+        let mut conn_test_db = db_connection_test_db.get_pool().get().expect("couldn't get db connection from pool");
 
         // create data model
-        embedded_migrations::run_with_output(&conn_test_db, &mut std::io::stdout()).expect("couldn't run migration");
+        // embedded_migrations::run_with_output(&conn_test_db, &mut std::io::stdout()).expect("couldn't run migration");
+        conn_test_db.run_pending_migrations(MIGRATIONS)?;
 
         // insert fixtures
         execute_imports(&db_connection_test_db);
 
-        Self {
-            base_url: base_url.to_string(),
-            db_name: db_name.to_string(),
-        }
+        // Self {
+        //     base_url: base_url.to_string(),
+        //     db_name: db_name.to_string(),
+        // }
+        Ok(())
     }
 }
 

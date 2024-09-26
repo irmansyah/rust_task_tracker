@@ -9,6 +9,8 @@ pub struct UserDbMapper {}
 
 pub struct UserAllDbMapper {}
 
+pub struct UserAccessTokenDbMapper {}
+
 impl DbMapper<UserEntity, User> for UserDbMapper {
     fn to_db(entity: UserEntity) -> User {
         User {
@@ -17,8 +19,9 @@ impl DbMapper<UserEntity, User> for UserDbMapper {
             email: entity.email,
             password_hash: entity.password,
             role: entity.role,
-            access_token: entity.access_token,
+            // refresh_token: entity.access_token,
             fcm_token: entity.fcm_token,
+            refresh_token: todo!(),
             last_login: todo!(),
             updated_at: todo!(),
             created_at: todo!(),
@@ -32,11 +35,12 @@ impl DbMapper<UserEntity, User> for UserDbMapper {
             email: model.email,
             password: model.password_hash,
             role: model.role,
-            access_token: model.access_token,
+            refresh_token: Some(model.refresh_token),
             fcm_token: model.fcm_token,
             last_login: model.last_login,
             updated_at: model.updated_at,
             created_at: model.created_at,
+            access_token: Some("".to_string()),
         }
     }
 }
@@ -49,7 +53,7 @@ impl DbMapper<UserAllEntity, User> for UserAllDbMapper {
             email: entity.email,
             role: entity.role,
             password_hash: todo!(),
-            access_token: todo!(),
+            refresh_token: todo!(),
             fcm_token: todo!(),
             last_login: todo!(),
             updated_at: todo!(),
@@ -63,6 +67,18 @@ impl DbMapper<UserAllEntity, User> for UserAllDbMapper {
             username: model.username,
             email: model.email,
             role: model.role,
+        }
+    }
+}
+
+impl DbMapper<UserAccessTokenEntity, String> for UserAccessTokenDbMapper {
+    fn to_db(entity: UserAccessTokenEntity) -> String {
+        entity.access_token.to_string()
+    }
+
+    fn to_entity(access_token: String) -> UserAccessTokenEntity {
+        UserAccessTokenEntity {
+            access_token: access_token.to_string(),
         }
     }
 }

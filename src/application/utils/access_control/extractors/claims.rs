@@ -40,7 +40,7 @@ impl FromStr for Role {
             "admin" => Ok(Role::Admin),
             "author" => Ok(Role::Author),
             "user" => Ok(Role::User),
-            _ => Ok(Role::User),
+            _ => Err(format!("Invalid role: {}", s)),
         }
     }
 }
@@ -73,7 +73,6 @@ pub enum ClientError {
     #[display(fmt = "unsupported_algorithm")]
     UnsupportedAlgortithm(AlgorithmParameters),
 }
-
 
 impl Claims {
     // Check if the user has the required role and permissions

@@ -3,17 +3,20 @@ use bcrypt::{hash, DEFAULT_COST};
 use chrono::Utc;
 use diesel::prelude::*;
 use std::error::Error;
+use std::str::FromStr;
 use std::sync::Arc;
 use uuid::Uuid;
 
+use crate::adapters::api::shared::error_presenter::ErrorResponse;
 use crate::adapters::api::users::users_payloads::*;
 use crate::application::mappers::db_mapper::DbMapper;
 use crate::application::utils::access_control::auth_usecase::AuthUseCase;
+use crate::application::utils::access_control::extractors::claims::{ClientError, Role};
 use crate::application::utils::validate_params;
-use crate::domain::user_entity::UserAllEntity;
+use crate::domain::user_entity::{UserAccessTokenEntity, UserAllEntity};
 use crate::{application::repositories::users_repository_abstract::UsersRepositoryAbstract, domain::user_entity::UserEntity};
 
-use super::db_users_mappers::{UserAllDbMapper, UserDbMapper};
+use super::db_users_mappers::{UserAccessTokenDbMapper, UserAllDbMapper, UserDbMapper};
 use super::schema::users::{self, *};
 use super::user_model::*;
 use crate::adapters::spi::db::{db_connection::DbConnection, schema::users::dsl::*};
@@ -82,16 +85,55 @@ impl UsersRepositoryAbstract for UsersRepository {
         }
         let permissions = AuthUseCase::check_role(&user.role);
 
-        let data_access_token = AuthUseCase::generate_token(&user.id.to_string(), &user.role, Some(permissions.clone())).unwrap_or_default();
+        let data_refresh_token = AuthUseCase::generate_token(&user.id.to_string(), &user.role, 3600 * 24, Some(permissions.clone())).unwrap_or_default();
+        let data_access_token = AuthUseCase::generate_token(&user.id.to_string(), &user.role, 3600, Some(permissions.clone())).unwrap_or_default();
 
         let target = users.filter(id.eq(user.id));
         let result = diesel::update(target)
-            .set((access_token.eq(data_access_token), last_login.eq(Utc::now().naive_utc().clone())))
+            .set((
+                last_login.eq(Utc::now().naive_utc().clone()),
+                refresh_token.eq(data_refresh_token.clone()),
+            ))
             .returning(User::as_returning())
             .get_result(&mut conn);
 
         match result {
-            Ok(model) => Ok(UserDbMapper::to_entity(model)),
+            Ok(model) => {
+                let mut entity = UserDbMapper::to_entity(model);
+                entity.access_token = Some(data_access_token);
+                Ok(entity)
+            }
+            Err(e) => Err(Box::new(e)),
+        }
+    }
+
+    async fn get_refresh(&self, user_payload: &UserRefreshTokenPayload) -> Result<UserAccessTokenEntity, Box<dyn Error>> {
+        let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
+
+        let claims = match AuthUseCase::validate_token(&user_payload.refresh_token) {
+            Ok(data) => data,
+            Err(_) => return Err(Box::new(ErrorResponse::default())), // Box the ClientError
+        };
+
+        let user_id = Uuid::parse_str(&claims.sub)?;
+        let target_user = users::table.filter(id.eq(user_id));
+        // .filter(refresh_token.eq(&user_payload.refresh_token));
+
+        let user = match target_user.select(User::as_select()).first::<User>(&mut conn) {
+            Ok(user) => user,
+            Err(_) => return Err(String::from("Failed refresh token").into()),
+        };
+
+        let permissions = AuthUseCase::check_role(&user.role);
+        let new_refresh_token = AuthUseCase::generate_token(&user.id.to_string(), &user.role, 3600 * 24, Some(permissions.clone())).unwrap_or_default();
+
+        let result = diesel::update(target_user)
+            .set(refresh_token.eq(new_refresh_token))
+            .returning(refresh_token)
+            .get_result(&mut conn);
+
+        match result {
+            Ok(model) => Ok(UserAccessTokenDbMapper::to_entity(model)),
             Err(e) => Err(Box::new(e)),
         }
     }

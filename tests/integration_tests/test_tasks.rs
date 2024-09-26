@@ -1,5 +1,7 @@
-use crate::utils::utils_setup::{setup, spawn_app};
+// use crate::utils::utils_setup::{setup, spawn_app};
 use tasktracker_backend::adapters::api::tasks::tasks_presenters::TaskPresenter;
+
+use crate::utils::utils_setup::{setup, spawn_app};
 
 #[actix_rt::test]
 async fn test_should_return_multiple_results() {
@@ -19,7 +21,7 @@ async fn test_should_return_multiple_results() {
 
     assert_eq!(content_json.len(), 3);
     assert_eq!(content_json[0].title, "Forty-five percent of U.S. tasks sleep in their owner's bed");
-    assert_eq!(content_json[0].task_id, 1);
+    assert_eq!(content_json[0].task_id, "id1".to_string());
 }
 
 #[actix_rt::test]
@@ -40,5 +42,5 @@ async fn test_should_return_one_results_only() {
     let content_json = response.json::<TaskPresenter>().await.unwrap();
 
     assert_eq!(content_json.title, "Seventy percent of people sign their task's name on their holiday cards");
-    assert_eq!(content_json.task_id, 2);
+    assert_eq!(content_json.task_id, "id1".to_string());
 }

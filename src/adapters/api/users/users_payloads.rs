@@ -100,7 +100,6 @@ impl UserLoginPayload {
         UserLoginPayload {
             email,
             password,
-            // role,
         }
     }
 }
@@ -128,6 +127,21 @@ impl UserUpdatePayload {
             email,
             password,
             role,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserRefreshTokenPayload {
+    pub refresh_token: String,
+}
+
+impl UserRefreshTokenPayload {
+    pub fn new(
+        refresh_token: String, 
+    ) -> Self {
+        UserRefreshTokenPayload {
+            refresh_token,
         }
     }
 }

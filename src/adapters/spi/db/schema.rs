@@ -5,7 +5,7 @@ diesel::table! {
         email -> Text,
         password_hash -> Text,
         role -> Text,
-        access_token -> VarChar,
+        refresh_token -> VarChar,
         fcm_token -> VarChar,
         last_login -> Timestamp,
         updated_at -> Timestamp,

@@ -5,7 +5,6 @@ use uuid::Uuid;
 
 use super::test_context::TestContextPostgreSQL;
 use crate::utils::utils_file::read_from_file;
-use tasktracker_backend::adapters::spi::http::http_models::{CatFactApiModel, CatFactsApiModel};
 
 pub fn spawn_app(db_name: &str) -> String {
     // Let the OS assign a port (:0)

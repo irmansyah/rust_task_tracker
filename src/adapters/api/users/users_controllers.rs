@@ -2,8 +2,8 @@ use crate::{
     adapters::api::{
         shared::{app_state::AppState, error_presenter::ErrorResponse, success_presenter::SuccessResponse},
         users::{
-            users_mappers::{UserAllPresenterMapper, UserPresenterMapper},
-            users_payloads::{UserIdPayload, UserLoginPayload, UserRegisterPayload, UserUpdatePayload},
+            users_mappers::{UserAccessTokenPresenterMapper, UserAllPresenterMapper, UserPresenterMapper},
+            users_payloads::{UserIdPayload, UserLoginPayload, UserRefreshTokenPayload, UserRegisterPayload, UserUpdatePayload},
             users_presenters::UserAllPresenter,
         },
     },
@@ -13,7 +13,8 @@ use crate::{
             interfaces::AbstractUseCase,
             user::{
                 delete_one_user_by_id_usecase::DeleteOneUserByIdUseCase, get_all_users_usecase::GetAllUsersUseCase, get_one_user_by_id_usecase::GetOneUserByIdUseCase,
-                login_user_usecase::LoginUserUseCase, register_user_usecase::RegisterUserUseCase, update_one_user_usecase::UpdateOneUserUseCase,
+                login_user_usecase::LoginUserUseCase, refresh_token_user_usecase::RefreshTokenUserUseCase, register_user_usecase::RegisterUserUseCase,
+                update_one_user_usecase::UpdateOneUserUseCase,
             },
         },
         utils::access_control::{auth_usecase::AuthCheckUseCase, extractors::claims::Claims},
@@ -26,6 +27,7 @@ use reqwest::StatusCode;
 pub fn routes(cfg: &mut web::ServiceConfig) {
     cfg.service(register_user)
         .service(login_user)
+        .service(get_refresh_token)
         .service(update_one_user)
         .service(update_one_user_own)
         .service(update_one_user_role)
@@ -55,6 +57,17 @@ async fn login_user(data: web::Data<AppState>, path: web::Json<UserLoginPayload>
 
     match login_user_usecase.execute().await {
         Ok(user) => Ok(SuccessResponse::new(StatusCode::OK, "User signin successfully", UserPresenterMapper::to_api(user)).to_http_response()),
+        Err(e) => Err(ErrorResponse::map_io_error(e)),
+    }
+}
+
+#[post("/refresh")]
+async fn get_refresh_token(data: web::Data<AppState>, path: web::Json<UserRefreshTokenPayload>) -> Result<HttpResponse, ErrorResponse> {
+    let user_payload = path.into_inner();
+    let login_user_usecase = RefreshTokenUserUseCase::new(&user_payload, &data.users_repository);
+
+    match login_user_usecase.execute().await {
+        Ok(token) => Ok(SuccessResponse::new(StatusCode::OK, "Token generate successfully", UserAccessTokenPresenterMapper::to_api(token)).to_http_response()),
         Err(e) => Err(ErrorResponse::map_io_error(e)),
     }
 }

@@ -7,7 +7,9 @@ pub struct UserPresenter {
     pub email: String,
     pub role: String,
     pub password: String,
-    pub access_token: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub refresh_token: Option<String>,
+    pub access_token: Option<String>,
     pub fcm_token: String,
     pub last_login: i64,
     pub updated_at: i64,
@@ -20,4 +22,9 @@ pub struct UserAllPresenter {
     pub username: String,
     pub email: String,
     pub role: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserAccessTokenPresenter {
+    pub access_token: String,
 }

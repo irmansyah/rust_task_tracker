@@ -6,9 +6,9 @@ use crate::{
         api::shared::app_state::AppState,
         spi::db::{db_connection::DbConnection, db_tasks_repository::TasksRepository, db_users_repository::UsersRepository},
     },
-    application::utils::access_control::middlewares::{self, err_handlers, logger, security_headers},
+    application::utils::access_control::middlewares::{logger, security_headers},
 };
-use actix_web::{dev::Server, middleware::Logger};
+use actix_web::dev::Server;
 use actix_web::{web, App, HttpServer};
 
 pub mod env_source;

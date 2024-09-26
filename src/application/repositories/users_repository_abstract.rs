@@ -2,7 +2,7 @@ use async_trait::async_trait;
 
 use crate::{
     adapters::api::users::users_payloads::*,
-    domain::user_entity::{UserEntity, UserAllEntity},
+    domain::user_entity::{UserAllEntity, UserEntity, UserAccessTokenEntity},
 };
 
 #[cfg(test)]
@@ -12,6 +12,7 @@ use std::error::Error;
 #[cfg_attr(test, automock)]
 #[async_trait(?Send)]
 pub trait UsersRepositoryAbstract {
+    async fn get_refresh(&self, user_payload: &UserRefreshTokenPayload) -> Result<UserAccessTokenEntity, Box<dyn Error>>;
     async fn register_user(&self, user_payload: &UserRegisterPayload) -> Result<UserEntity, Box<dyn Error>>;
     async fn login_user(&self, user_payload: &UserLoginPayload) -> Result<UserEntity, Box<dyn Error>>;
     async fn update_one_user(&self, user_payload: &UserUpdatePayload) -> Result<UserEntity, Box<dyn Error>>;

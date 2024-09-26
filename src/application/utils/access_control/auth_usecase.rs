@@ -3,7 +3,7 @@ use std::{
     future::Future,
     pin::Pin,
     str::FromStr,
-    time::{SystemTime, UNIX_EPOCH},
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
 use actix_web::{dev::Payload, Error, FromRequest, HttpRequest};
@@ -23,16 +23,16 @@ impl AuthUseCase {
 
         match Role::from_str(role) {
             Ok(Role::SuperAdmin) => {
-                permissions = AuthUseCase::all_read_up_to_superadmin();
+                permissions = AuthUseCase::all_read_down_to_superadmin();
             }
             Ok(Role::Admin) => {
-                permissions = AuthUseCase::all_read_up_to_admin();
+                permissions = AuthUseCase::all_read_down_to_admin();
             }
             Ok(Role::Author) => {
-                permissions = AuthUseCase::all_read_up_to_author();
+                permissions = AuthUseCase::all_read_down_to_author();
             }
             Ok(Role::User) => {
-                permissions = AuthUseCase::all_read_up_to_user();
+                permissions = AuthUseCase::all_read_down_to_user();
             }
             Err(_) => {
                 println!("Invalid role: {}", role);
@@ -42,7 +42,7 @@ impl AuthUseCase {
         permissions
     }
 
-    pub fn all_read_up_to_superadmin() -> HashSet<Permission> {
+    pub fn all_read_down_to_superadmin() -> HashSet<Permission> {
         let mut permissions = HashSet::new();
         permissions.insert(Permission::Read("superadmin-tasks".to_string()));
         permissions.insert(Permission::Read("admin-tasks".to_string()));
@@ -51,7 +51,7 @@ impl AuthUseCase {
         permissions
     }
 
-    pub fn all_read_up_to_admin() -> HashSet<Permission> {
+    pub fn all_read_down_to_admin() -> HashSet<Permission> {
         let mut permissions = HashSet::new();
         permissions.insert(Permission::Read("admin-tasks".to_string()));
         permissions.insert(Permission::Read("author-tasks".to_string()));
@@ -59,18 +59,25 @@ impl AuthUseCase {
         permissions
     }
 
-    pub fn all_read_up_to_author() -> HashSet<Permission> {
+    pub fn all_read_down_to_author() -> HashSet<Permission> {
         let mut permissions = HashSet::new();
         permissions.insert(Permission::Read("author-tasks".to_string()));
         permissions.insert(Permission::Read("user-tasks".to_string()));
         permissions
     }
 
-    pub fn all_read_up_to_user() -> HashSet<Permission> {
+    pub fn all_read_down_to_user() -> HashSet<Permission> {
         let mut permissions = HashSet::new();
         permissions.insert(Permission::Read("user-tasks".to_string()));
         permissions
     }
+
+    // pub fn all_read_up_to_admin() -> HashSet<Permission> {
+    //     let mut permissions = HashSet::new();
+    //     permissions.insert(Permission::Read("superadmin-tasks".to_string()));
+    //     permissions.insert(Permission::Read("admin-tasks".to_string()));
+    //     permissions
+    // }
 
     pub fn no() -> HashSet<Permission> {
         let permissions = HashSet::new();
@@ -78,37 +85,31 @@ impl AuthUseCase {
     }
 
     // Generate a token with a secret key, including roles and permissions
-    pub fn generate_token(user_id: &str, role_str: &str, permissions: Option<HashSet<Permission>>) -> Result<String, jsonwebtoken::errors::Error> {
+    pub fn generate_token(user_id: &str, role_str: &str, expiration: usize, permissions: Option<HashSet<Permission>>) -> Result<String, jsonwebtoken::errors::Error> {
         let secret = env_source::get_jwt_secret();
-        let expiration = SystemTime::now().duration_since(UNIX_EPOCH).expect("Time went backwards").as_secs() + 3600; // 1-hour expiration
+        let expiration_time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap() + Duration::from_secs(expiration as u64); // 1-hour expiration
 
         let role = match Role::from_str(role_str) {
             Ok(it) => it,
             Err(_) => Role::User,
         };
-
         let claims = Claims {
             sub: user_id.to_owned(),
             role,
             permissions,
-            exp: expiration as usize,
+            exp: expiration_time.as_secs() as usize,
         };
 
         encode(&Header::default(), &claims, &EncodingKey::from_secret(&secret))
     }
 
     // Validate the token with the secret key
-    fn validate_token(token: &str, secret: &[u8]) -> Result<Claims, ClientError> {
+    pub fn validate_token(token: &str) -> Result<Claims, ClientError> {
+        let secret = env_source::get_jwt_secret();
         let validation = Validation::new(Algorithm::HS256);
-        decode::<Claims>(token, &DecodingKey::from_secret(secret), &validation)
+        decode::<Claims>(token, &DecodingKey::from_secret(&secret), &validation)
             .map_err(ClientError::Decode)
             .map(|data| data.claims)
-    }
-
-    pub fn get_user_id_from_token(token: &str, secret: &[u8]) -> Result<String, ClientError> {
-        // Validate the token and extract the claims
-        let claims = AuthUseCase::validate_token(token, secret)?;
-        Ok(claims.sub)
     }
 }
 
@@ -120,7 +121,7 @@ impl AuthCheckUseCase {
         }
         println!("Role validated: SuperAdmin, Admin, Author, User");
 
-        if !claims.validate_permissions(&AuthUseCase::all_read_up_to_user()) {
+        if !claims.validate_permissions(&AuthUseCase::all_read_down_to_user()) {
             return Err(ErrorResponse::default());
         }
 
@@ -135,7 +136,7 @@ impl AuthCheckUseCase {
         }
         println!("Role validated: Admin, Author, User");
 
-        if !claims.validate_permissions(&AuthUseCase::all_read_up_to_author()) {
+        if !claims.validate_permissions(&AuthUseCase::all_read_down_to_author()) {
             return Err(ErrorResponse::default());
         }
 
@@ -150,7 +151,7 @@ impl AuthCheckUseCase {
         }
         println!("Role validated: Author, User");
 
-        if !claims.validate_permissions(&AuthUseCase::all_read_up_to_admin()) {
+        if !claims.validate_permissions(&AuthUseCase::all_read_down_to_admin()) {
             return Err(ErrorResponse::default());
         }
 
@@ -165,7 +166,7 @@ impl AuthCheckUseCase {
         }
         println!("Role validated: User");
 
-        if !claims.validate_permissions(&AuthUseCase::all_read_up_to_superadmin()) {
+        if !claims.validate_permissions(&AuthUseCase::all_read_down_to_superadmin()) {
             return Err(ErrorResponse::default());
         }
 
@@ -189,8 +190,7 @@ impl FromRequest for Claims {
 
         Box::pin(async move {
             if let Some(token) = auth_header {
-                let jwt_secret = env_source::get_jwt_secret();
-                match AuthUseCase::validate_token(&token, &jwt_secret) {
+                match AuthUseCase::validate_token(&token) {
                     Ok(claims) => Ok(claims),
                     Err(err) => Err(err.into()),
                 }

@@ -32,7 +32,9 @@ mod tests {
     use super::*;
     use std::io::{Error, ErrorKind};
 
-    use crate::{adapters::api::users::users_payloads::UserRolePayload, application::repositories::users_repository_abstract::MockUsersRepositoryAbstract, domain::user_entity::UserAllEntity};
+    use crate::{
+        adapters::api::users::users_payloads::UserRolePayload, application::repositories::users_repository_abstract::MockUsersRepositoryAbstract, domain::user_entity::UserAllEntity,
+    };
 
     #[actix_rt::test]
     async fn test_should_return_error_with_generic_message_when_unexpected_repo_error() {
