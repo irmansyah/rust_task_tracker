@@ -11,12 +11,12 @@ pub enum Role {
     SuperAdmin,
     Admin,
     Author,
-    User,
+    Customer,
 }
 
 impl Default for Role {
     fn default() -> Self {
-        Role::User
+        Role::Customer
     }
 }
 
@@ -26,7 +26,7 @@ impl fmt::Display for Role {
             Role::SuperAdmin => write!(f, "super_admin"),
             Role::Admin => write!(f, "admin"),
             Role::Author => write!(f, "author"),
-            Role::User => write!(f, "user"),
+            Role::Customer => write!(f, "customer"),
         }
     }
 }
@@ -39,7 +39,7 @@ impl FromStr for Role {
             "super_admin" => Ok(Role::SuperAdmin),
             "admin" => Ok(Role::Admin),
             "author" => Ok(Role::Author),
-            "user" => Ok(Role::User),
+            "user" => Ok(Role::Customer),
             _ => Err(format!("Invalid role: {}", s)),
         }
     }

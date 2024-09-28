@@ -1,15 +1,19 @@
 use chrono::NaiveDateTime;
+use serde::Serialize;
 
-#[derive(Debug, Clone)]
+#[derive(Serialize, Debug, Clone)]
 pub struct UserEntity {
     pub id: String,
     pub username: String,
     pub email: String,
     pub password: String,
     pub role: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub refresh_token: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub access_token: Option<String>,
-    pub fcm_token: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fcm_token: Option<String>,
     pub last_login: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub created_at: NaiveDateTime,
@@ -24,7 +28,7 @@ impl UserEntity {
         role: String,
         refresh_token: Option<String>,
         access_token: Option<String>,
-        fcm_token: String,
+        fcm_token: Option<String>,
         last_login: NaiveDateTime,
         updated_at: NaiveDateTime,
         created_at: NaiveDateTime,

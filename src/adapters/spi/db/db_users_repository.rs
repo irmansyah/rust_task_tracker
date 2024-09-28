@@ -8,12 +8,11 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::adapters::api::shared::error_presenter::ErrorResponse;
-use crate::adapters::api::users::users_payloads::{self, *};
+use crate::adapters::api::users::users_payloads::*;
 use crate::application::mappers::db_mapper::DbMapper;
 use crate::application::utils::access_control::auth_usecase::AuthUseCase;
 use crate::application::utils::validate_params;
-use crate::domain::user_entity::{UserAccessTokenEntity, UserAllEntity};
-use crate::{application::repositories::users_repository_abstract::UsersRepositoryAbstract, domain::user_entity::UserEntity};
+use crate::{application::repositories::users_repository_abstract::UsersRepositoryAbstract, domain::user_entity::{UserEntity, UserAllEntity, UserAccessTokenEntity}};
 
 use super::db_users_mappers::{UserAccessTokenDbMapper, UserAllDbMapper, UserDbMapper};
 use super::schema::users::{self, *};
@@ -83,7 +82,6 @@ impl UsersRepositoryAbstract for UsersRepository {
             return Err(String::from("Invalid email or password!").into());
         }
         let permissions = AuthUseCase::check_role(&user.role);
-
         let data_refresh_token = AuthUseCase::generate_token(&user.id.to_string(), &user.role, 3600 * 24, Some(permissions.clone())).unwrap_or_default();
         let data_access_token = AuthUseCase::generate_token(&user.id.to_string(), &user.role, 3600, Some(permissions.clone())).unwrap_or_default();
 
@@ -170,7 +168,14 @@ impl UsersRepositoryAbstract for UsersRepository {
         let result = users.filter(id.eq(user_id)).get_result::<User>(&mut conn);
 
         match result {
-            Ok(model) => Ok(UserDbMapper::to_entity(model)),
+            // Ok(model) => Ok(UserDbMapper::to_entity(model)),
+            Ok(model) => {
+                let mut entity = UserDbMapper::to_entity(model);
+                entity.refresh_token = None;
+                entity.access_token = None;
+                entity.fcm_token = None;
+                Ok(entity)
+            }
             Err(e) => Err(Box::new(e)),
         }
     }

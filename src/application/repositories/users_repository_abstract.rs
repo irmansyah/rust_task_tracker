@@ -2,7 +2,7 @@ use async_trait::async_trait;
 
 use crate::{
     adapters::api::users::users_payloads::*,
-    domain::user_entity::{UserAllEntity, UserEntity, UserAccessTokenEntity},
+    domain::user_entity::{UserEntity, UserAllEntity, UserAccessTokenEntity},
 };
 
 #[cfg(test)]

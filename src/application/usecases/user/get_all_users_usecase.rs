@@ -80,13 +80,13 @@ mod tests {
                     id: String::from("id1"),
                     username: String::from("User 1"),
                     email: String::from("test1@gmail.com"),
-                    role: UserRolePayload::User.to_string(),
+                    role: UserRolePayload::Customer.to_string(),
                 },
                 UserAllEntity {
                     id: String::from("id2"),
                     username: String::from("User 2"),
                     email: String::from("test1@gmail.com"),
-                    role: UserRolePayload::User.to_string(),
+                    role: UserRolePayload::Customer.to_string(),
                 },
             ])
         });

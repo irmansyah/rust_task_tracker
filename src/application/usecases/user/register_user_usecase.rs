@@ -40,7 +40,7 @@ mod tests {
     async fn test_should_return_generic_message_when_unexpected_repo_error() {
         // given the "all user users" usecase repo with an unexpected random error
         let mut user_repository = MockUsersRepositoryAbstract::new();
-        let payload = UserRegisterPayload::new(String::from("user1"), String::from("test@gmail.com"), String::from("test1234"), Some(UserRolePayload::User));
+        let payload = UserRegisterPayload::new(String::from("user1"), String::from("test@gmail.com"), String::from("test1234"), Some(UserRolePayload::Customer));
         user_repository
             .expect_register_user()
             .times(1)
@@ -60,7 +60,7 @@ mod tests {
     async fn test_should_return_one_result() {
         // given the "one user user by id" usecase repo returning one result
         let mut user_repository = MockUsersRepositoryAbstract::new();
-        let payload = UserRegisterPayload::new(String::from("User1"), String::from("user1@gmail.com"), String::from("test1234"), Some(UserRolePayload::User));
+        let payload = UserRegisterPayload::new(String::from("User1"), String::from("user1@gmail.com"), String::from("test1234"), Some(UserRolePayload::Customer));
 
         // 1725862140
         user_repository.expect_register_user().times(1).returning(|_| {
@@ -69,10 +69,10 @@ mod tests {
                 username: String::from("User 1"),
                 email: String::from("test1@gmail.com"),
                 password: String::from("Test1234"),
-                role: UserRolePayload::User.to_string(),
+                role: UserRolePayload::Customer.to_string(),
                 refresh_token: Some(String::from("thisisaccesstoken123")),
                 access_token: Some(String::from("thisisaccesstoken123")),
-                fcm_token: String::from("thisisfcmtoken123"),
+                fcm_token: Some(String::from("thisisfcmtoken123")),
                 last_login: todo!(),
                 updated_at: todo!(),
                 created_at: todo!(),

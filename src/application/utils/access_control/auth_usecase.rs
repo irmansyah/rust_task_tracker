@@ -31,7 +31,7 @@ impl AuthUseCase {
             Ok(Role::Author) => {
                 permissions = AuthUseCase::all_read_down_to_author();
             }
-            Ok(Role::User) => {
+            Ok(Role::Customer) => {
                 permissions = AuthUseCase::all_read_down_to_user();
             }
             Err(_) => {
@@ -91,7 +91,7 @@ impl AuthUseCase {
 
         let role = match Role::from_str(role_str) {
             Ok(it) => it,
-            Err(_) => Role::User,
+            Err(_) => Role::Customer,
         };
         let claims = Claims {
             sub: user_id.to_owned(),
@@ -115,7 +115,7 @@ impl AuthUseCase {
 
 impl AuthCheckUseCase {
     pub fn check_permission_up_to_user(claims: Claims) -> Result<(), ErrorResponse> {
-        let allowed_roles = vec![Role::SuperAdmin, Role::Admin, Role::Author, Role::User];
+        let allowed_roles = vec![Role::SuperAdmin, Role::Admin, Role::Author, Role::Customer];
         if !claims.validate_roles(&allowed_roles) {
             return Err(ErrorResponse::default());
         }

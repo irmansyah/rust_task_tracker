@@ -34,18 +34,22 @@ mod tests {
     use super::*;
     use std::io::{Error, ErrorKind};
 
-    use crate::{adapters::api::users::users_payloads::{UserRolePayload, UserRolePromotePayload}, application::repositories::users_repository_abstract::MockUsersRepositoryAbstract};
+    use crate::{
+        adapters::api::users::users_payloads::{UserRolePayload, UserRolePromotePayload},
+        application::repositories::users_repository_abstract::MockUsersRepositoryAbstract,
+    };
 
     #[actix_rt::test]
     async fn test_should_return_generic_message_when_unexpected_repo_error() {
         // given the "all user users" usecase repo with an unexpected random error
         let mut user_repository = MockUsersRepositoryAbstract::new();
         let payload = UserUpdatePayload::new(
-            Some(String::from("id1")), 
+            Some(String::from("id1")),
             Some(String::from("user1")),
-            Some(String::from("test1@gmail.com")), 
-            Some(String::from("test1234")), 
-            Some(UserRolePromotePayload::Promote)
+            Some(String::from("test1@gmail.com")),
+            Some(String::from("test1234")),
+            Some(UserRolePayload::Customer),
+            Some(UserRolePromotePayload::Promote),
         );
         user_repository
             .expect_update_one_user()
@@ -67,11 +71,12 @@ mod tests {
         // given the "one user user by id" usecase repo returning one result
         let mut user_repository = MockUsersRepositoryAbstract::new();
         let payload = UserUpdatePayload::new(
-            Some(String::from("id1")), 
+            Some(String::from("id1")),
             Some(String::from("user1")),
-            Some(String::from("test1@gmail.com")), 
-            Some(String::from("test1234")), 
-            Some(UserRolePromotePayload::Promote)
+            Some(String::from("test1@gmail.com")),
+            Some(String::from("test1234")),
+            Some(UserRolePayload::Customer),
+            Some(UserRolePromotePayload::Promote),
         );
         user_repository.expect_update_one_user().times(1).returning(|_| {
             Ok(UserEntity {
@@ -79,10 +84,10 @@ mod tests {
                 username: String::from("User 1"),
                 email: String::from("test1@gmail.com"),
                 password: String::from("Test1234"),
-                role: UserRolePayload::User.to_string(),
+                role: UserRolePayload::Customer.to_string(),
                 refresh_token: Some(String::from("thisisaccesstoken123")),
                 access_token: Some(String::from("thisisaccesstoken123")),
-                fcm_token: String::from("thisisfcmtoken123"),
+                fcm_token: Some(String::from("thisisfcmtoken123")),
                 last_login: todo!(),
                 updated_at: todo!(),
                 created_at: todo!(),

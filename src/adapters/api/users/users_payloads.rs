@@ -8,12 +8,12 @@ pub enum UserRolePayload {
     SuperAdmin,
     Admin,
     Author,
-    User,
+    Customer,
 }
 
 impl Default for UserRolePayload {
     fn default() -> Self {
-        UserRolePayload::User
+        UserRolePayload::Customer
     }
 }
 
@@ -23,7 +23,7 @@ impl fmt::Display for UserRolePayload {
             UserRolePayload::SuperAdmin => write!(f, "super_admin"),
             UserRolePayload::Admin => write!(f, "admin"),
             UserRolePayload::Author => write!(f, "author"),
-            UserRolePayload::User => write!(f, "user"),
+            UserRolePayload::Customer => write!(f, "customer"),
         }
     }
 }
@@ -31,7 +31,7 @@ impl fmt::Display for UserRolePayload {
 impl UserRolePayload {
     pub fn promote_by_superadmin(self) -> Option<UserRolePayload> {
         match self {
-            UserRolePayload::User => Some(UserRolePayload::Author),
+            UserRolePayload::Customer => Some(UserRolePayload::Author),
             UserRolePayload::Author => Some(UserRolePayload::Admin),
             UserRolePayload::Admin => Some(UserRolePayload::SuperAdmin),
             UserRolePayload::SuperAdmin => None,
@@ -40,7 +40,7 @@ impl UserRolePayload {
 
     pub fn promote(self) -> Option<UserRolePayload> {
         match self {
-            UserRolePayload::User => Some(UserRolePayload::Author),
+            UserRolePayload::Customer => Some(UserRolePayload::Author),
             UserRolePayload::Author => None,
             UserRolePayload::Admin => None,
             UserRolePayload::SuperAdmin => None,
@@ -51,8 +51,8 @@ impl UserRolePayload {
         match self {
             UserRolePayload::SuperAdmin => Some(UserRolePayload::Admin),
             UserRolePayload::Admin => Some(UserRolePayload::Author),
-            UserRolePayload::Author => Some(UserRolePayload::User),
-            UserRolePayload::User => None, // No demotion from User
+            UserRolePayload::Author => Some(UserRolePayload::Customer),
+            UserRolePayload::Customer => None, // No demotion from User
         }
     }
 
@@ -60,8 +60,8 @@ impl UserRolePayload {
         match self {
             UserRolePayload::SuperAdmin => None,
             UserRolePayload::Admin => Some(UserRolePayload::Author),
-            UserRolePayload::Author => Some(UserRolePayload::User),
-            UserRolePayload::User => None, // No demotion from User
+            UserRolePayload::Author => Some(UserRolePayload::Customer),
+            UserRolePayload::Customer => None, // No demotion from User
         }
     }
 }
@@ -74,7 +74,7 @@ impl FromStr for UserRolePayload {
             "super_admin" => Ok(UserRolePayload::SuperAdmin),
             "admin" => Ok(UserRolePayload::Admin),
             "author" => Ok(UserRolePayload::Author),
-            "user" => Ok(UserRolePayload::User),
+            "user" => Ok(UserRolePayload::Customer),
             _ => Err(format!("UserRolePayload role: {}", s)),
         }
     }
@@ -118,9 +118,6 @@ impl UserRolePromotePayload {
                 };
             }
             UserRolePromotePayload::Demote => {
-                // if let Some(next_role) = data_user_role.clone().demote() {
-                //     data_user_role = next_role;
-                // }
                 data_user_role = match data_my_role {
                     UserRolePayload::SuperAdmin => data_user_role.clone().demote_by_superadmin().unwrap_or(data_user_role),
                     UserRolePayload::Admin => data_user_role.clone().demote().unwrap_or(data_user_role),

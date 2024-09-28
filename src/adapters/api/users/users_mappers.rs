@@ -1,9 +1,6 @@
-use std::str::FromStr;
-
 use chrono::NaiveDateTime;
 
 use crate::application::mappers::api_mapper::ApiMapper;
-use crate::application::utils::access_control::extractors::claims::Role;
 use crate::domain::user_entity::{UserAccessTokenEntity, UserAllEntity, UserEntity};
 
 use super::users_payloads::{UserPayload, UserRegisterPayload};
@@ -17,12 +14,6 @@ pub struct UserAccessTokenPresenterMapper {}
 
 impl ApiMapper<UserEntity, UserPresenter, UserRegisterPayload> for UserPresenterMapper {
     fn to_api(entity: UserEntity) -> UserPresenter {
-        // let role = Role::from_str(&entity.role).unwrap_or(Role::User);
-        // let refresh_token = if role == Role::Admin || role == Role::SuperAdmin {
-        //     entity.refresh_token
-        // } else {
-        //     None
-        // };
         UserPresenter {
             user_id: entity.id,
             username: entity.username,

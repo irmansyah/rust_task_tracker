@@ -21,7 +21,7 @@ use crate::{
         },
         utils::access_control::{auth_usecase::AuthCheckUseCase, extractors::claims::Claims},
     },
-    domain::{error::ApiError, user_entity::UserAllEntity},
+    domain::{error::ApiError, user_entity::{UserAllEntity, UserEntity}},
 };
 use actix_web::{delete, get, patch, post, web, HttpResponse};
 use reqwest::StatusCode;
