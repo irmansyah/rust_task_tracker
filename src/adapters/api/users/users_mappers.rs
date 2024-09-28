@@ -17,19 +17,19 @@ pub struct UserAccessTokenPresenterMapper {}
 
 impl ApiMapper<UserEntity, UserPresenter, UserRegisterPayload> for UserPresenterMapper {
     fn to_api(entity: UserEntity) -> UserPresenter {
-        let role = Role::from_str(&entity.role).unwrap_or(Role::User);
-        let refresh_token = if role == Role::Admin || role == Role::SuperAdmin {
-            entity.refresh_token
-        } else {
-            None
-        };
+        // let role = Role::from_str(&entity.role).unwrap_or(Role::User);
+        // let refresh_token = if role == Role::Admin || role == Role::SuperAdmin {
+        //     entity.refresh_token
+        // } else {
+        //     None
+        // };
         UserPresenter {
             user_id: entity.id,
             username: entity.username,
             email: entity.email,
             role: entity.role,
             password: entity.password,
-            refresh_token,
+            refresh_token: entity.refresh_token,
             access_token: entity.access_token,
             fcm_token: entity.fcm_token,
             last_login: naive_datetime_to_unixtimemillis(entity.last_login),

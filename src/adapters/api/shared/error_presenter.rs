@@ -43,7 +43,7 @@ pub struct ErrorResponse {
 impl Default for ErrorResponse {
     fn default() -> Self {
         ErrorResponse {
-            code: StatusCode::UNAUTHORIZED,
+            code: StatusCode::BAD_REQUEST,
             message: "Permission denied".to_string(),
             data: None,
         }
@@ -105,6 +105,14 @@ impl ErrorResponse {
                 message: String::from("Error: an unknown error occured"),
                 data: None,
             },
+        }
+    }
+
+    pub fn map_io_error_default(e: String) -> ErrorResponse {
+        ErrorResponse {
+            code: StatusCode::BAD_REQUEST,
+            message: e,
+            data: None,
         }
     }
 }

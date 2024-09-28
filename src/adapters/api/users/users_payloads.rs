@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use std::fmt;
+use std::{fmt, str::FromStr};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -8,7 +8,7 @@ pub enum UserRolePayload {
     SuperAdmin,
     Admin,
     Author,
-    User
+    User,
 }
 
 impl Default for UserRolePayload {
@@ -27,23 +27,109 @@ impl fmt::Display for UserRolePayload {
         }
     }
 }
+
 impl UserRolePayload {
-    pub fn next(self) -> Option<UserRolePayload> {
+    pub fn promote_by_superadmin(self) -> Option<UserRolePayload> {
         match self {
             UserRolePayload::User => Some(UserRolePayload::Author),
-            UserRolePayload::Author => Some(UserRolePayload::Author),
-            UserRolePayload::Admin => Some(UserRolePayload::Admin),
-            UserRolePayload::SuperAdmin => None,  // No further promotion
+            UserRolePayload::Author => Some(UserRolePayload::Admin),
+            UserRolePayload::Admin => Some(UserRolePayload::SuperAdmin),
+            UserRolePayload::SuperAdmin => None,
         }
     }
 
-    pub fn previous(self) -> Option<UserRolePayload> {
+    pub fn promote(self) -> Option<UserRolePayload> {
+        match self {
+            UserRolePayload::User => Some(UserRolePayload::Author),
+            UserRolePayload::Author => None,
+            UserRolePayload::Admin => None,
+            UserRolePayload::SuperAdmin => None,
+        }
+    }
+
+    pub fn demote_by_superadmin(self) -> Option<UserRolePayload> {
         match self {
             UserRolePayload::SuperAdmin => Some(UserRolePayload::Admin),
-            UserRolePayload::Admin => Some(UserRolePayload::Admin),
+            UserRolePayload::Admin => Some(UserRolePayload::Author),
             UserRolePayload::Author => Some(UserRolePayload::User),
-            UserRolePayload::User => None,  // No demotion from User
+            UserRolePayload::User => None, // No demotion from User
         }
+    }
+
+    pub fn demote(self) -> Option<UserRolePayload> {
+        match self {
+            UserRolePayload::SuperAdmin => None,
+            UserRolePayload::Admin => Some(UserRolePayload::Author),
+            UserRolePayload::Author => Some(UserRolePayload::User),
+            UserRolePayload::User => None, // No demotion from User
+        }
+    }
+}
+
+impl FromStr for UserRolePayload {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "super_admin" => Ok(UserRolePayload::SuperAdmin),
+            "admin" => Ok(UserRolePayload::Admin),
+            "author" => Ok(UserRolePayload::Author),
+            "user" => Ok(UserRolePayload::User),
+            _ => Err(format!("UserRolePayload role: {}", s)),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum UserRolePromotePayload {
+    Promote,
+    Demote,
+    None,
+}
+
+impl Default for UserRolePromotePayload {
+    fn default() -> Self {
+        UserRolePromotePayload::None
+    }
+}
+
+impl FromStr for UserRolePromotePayload {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "promote" => Ok(UserRolePromotePayload::Promote),
+            "demote" => Ok(UserRolePromotePayload::Demote),
+            "none" => Ok(UserRolePromotePayload::None),
+            _ => Ok(UserRolePromotePayload::None),
+        }
+    }
+}
+
+impl UserRolePromotePayload {
+    pub fn apply_role_change(&self, data_my_role: UserRolePayload, mut data_user_role: UserRolePayload) -> UserRolePayload {
+        match self {
+            UserRolePromotePayload::Promote => {
+                data_user_role = match data_my_role {
+                    UserRolePayload::SuperAdmin => data_user_role.clone().promote_by_superadmin().unwrap_or(data_user_role),
+                    UserRolePayload::Admin => data_user_role.clone().promote().unwrap_or(data_user_role),
+                    _ => data_user_role, // No promotion for other roles
+                };
+            }
+            UserRolePromotePayload::Demote => {
+                // if let Some(next_role) = data_user_role.clone().demote() {
+                //     data_user_role = next_role;
+                // }
+                data_user_role = match data_my_role {
+                    UserRolePayload::SuperAdmin => data_user_role.clone().demote_by_superadmin().unwrap_or(data_user_role),
+                    UserRolePayload::Admin => data_user_role.clone().demote().unwrap_or(data_user_role),
+                    _ => data_user_role, // No promotion for other roles
+                };
+            }
+            UserRolePromotePayload::None => { /* No changes */ }
+        }
+        data_user_role
     }
 }
 
@@ -53,12 +139,8 @@ pub struct UserIdPayload {
 }
 
 impl UserIdPayload {
-    pub fn new(
-        user_id: String, 
-    ) -> Self {
-        UserIdPayload {
-            user_id,
-        }
+    pub fn new(user_id: String) -> Self {
+        UserIdPayload { user_id }
     }
 }
 
@@ -71,18 +153,8 @@ pub struct UserRegisterPayload {
 }
 
 impl UserRegisterPayload {
-    pub fn new(
-        username: String, 
-        email: String, 
-        password: String, 
-        role: Option<UserRolePayload>, 
-    ) -> Self {
-        UserRegisterPayload {
-            username,
-            email,
-            password,
-            role,
-        }
+    pub fn new(username: String, email: String, password: String, role: Option<UserRolePayload>) -> Self {
+        UserRegisterPayload { username, email, password, role }
     }
 }
 
@@ -93,33 +165,29 @@ pub struct UserLoginPayload {
 }
 
 impl UserLoginPayload {
-    pub fn new(
-        email: String, 
-        password: String, 
-    ) -> Self {
-        UserLoginPayload {
-            email,
-            password,
-        }
+    pub fn new(email: String, password: String) -> Self {
+        UserLoginPayload { email, password }
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 pub struct UserUpdatePayload {
-    pub user_id: String,
+    pub user_id: Option<String>,
     pub username: Option<String>,
     pub email: Option<String>,
     pub password: Option<String>,
     pub role: Option<UserRolePayload>,
+    pub role_promote: Option<UserRolePromotePayload>,
 }
 
 impl UserUpdatePayload {
     pub fn new(
-        user_id: String, 
-        username: Option<String>, 
-        email: Option<String>, 
-        password: Option<String>, 
-        role: Option<UserRolePayload>, 
+        user_id: Option<String>,
+        username: Option<String>,
+        email: Option<String>,
+        password: Option<String>,
+        role: Option<UserRolePayload>,
+        role_promote: Option<UserRolePromotePayload>,
     ) -> Self {
         UserUpdatePayload {
             user_id,
@@ -127,6 +195,7 @@ impl UserUpdatePayload {
             email,
             password,
             role,
+            role_promote,
         }
     }
 }
@@ -137,12 +206,8 @@ pub struct UserRefreshTokenPayload {
 }
 
 impl UserRefreshTokenPayload {
-    pub fn new(
-        refresh_token: String, 
-    ) -> Self {
-        UserRefreshTokenPayload {
-            refresh_token,
-        }
+    pub fn new(refresh_token: String) -> Self {
+        UserRefreshTokenPayload { refresh_token }
     }
 }
 

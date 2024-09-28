@@ -7,7 +7,6 @@ pub struct UserPresenter {
     pub email: String,
     pub role: String,
     pub password: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub refresh_token: Option<String>,
     pub access_token: Option<String>,
     pub fcm_token: String,

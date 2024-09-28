@@ -1,6 +1,6 @@
 
 CREATE TABLE "tasks" (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID DEFAULT uuid_generate_v4() NOT NULL,
     title TEXT,
     typ TEXT,

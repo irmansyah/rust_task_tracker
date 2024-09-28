@@ -8,10 +8,9 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::adapters::api::shared::error_presenter::ErrorResponse;
-use crate::adapters::api::users::users_payloads::*;
+use crate::adapters::api::users::users_payloads::{self, *};
 use crate::application::mappers::db_mapper::DbMapper;
 use crate::application::utils::access_control::auth_usecase::AuthUseCase;
-use crate::application::utils::access_control::extractors::claims::{ClientError, Role};
 use crate::application::utils::validate_params;
 use crate::domain::user_entity::{UserAccessTokenEntity, UserAllEntity};
 use crate::{application::repositories::users_repository_abstract::UsersRepositoryAbstract, domain::user_entity::UserEntity};
@@ -90,10 +89,7 @@ impl UsersRepositoryAbstract for UsersRepository {
 
         let target = users.filter(id.eq(user.id));
         let result = diesel::update(target)
-            .set((
-                last_login.eq(Utc::now().naive_utc().clone()),
-                refresh_token.eq(data_refresh_token.clone()),
-            ))
+            .set((last_login.eq(Utc::now().naive_utc().clone()), refresh_token.eq(data_refresh_token.clone())))
             .returning(User::as_returning())
             .get_result(&mut conn);
 
@@ -116,8 +112,7 @@ impl UsersRepositoryAbstract for UsersRepository {
         };
 
         let user_id = Uuid::parse_str(&claims.sub)?;
-        let target_user = users::table.filter(id.eq(user_id));
-        // .filter(refresh_token.eq(&user_payload.refresh_token));
+        let target_user = users::table.filter(id.eq(user_id)).filter(refresh_token.eq(&user_payload.refresh_token));
 
         let user = match target_user.select(User::as_select()).first::<User>(&mut conn) {
             Ok(user) => user,
@@ -140,19 +135,24 @@ impl UsersRepositoryAbstract for UsersRepository {
 
     async fn update_one_user(&self, user_payload: &UserUpdatePayload) -> Result<UserEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
-        let user_id = Uuid::parse_str(&user_payload.user_id)?;
-        let target = users.filter(id.eq(user_id));
+        let user_id = Uuid::parse_str(&user_payload.user_id.clone().unwrap_or_default()).unwrap_or_default();
+        let target = users::table.filter(id.eq(user_id));
 
-        let mut promote_role = user_payload.role.clone().unwrap_or_default();
-        if let Some(next_role) = promote_role.clone().next() {
-            promote_role = next_role;
-            println!("Promoted from: {} :: to: {}", &user_payload.role.clone().unwrap_or_default(), promote_role);
-        }
+        let user = match target.select(User::as_select()).first::<User>(&mut conn) {
+            Ok(user) => user,
+            Err(_) => return Err(String::from("Failed refresh token").into()),
+        };
+
+        let data_my_role = user_payload.role.clone().unwrap_or_default();
+        let data_user_role = UserRolePayload::from_str(&user.role).clone().unwrap_or_default();
+        let promote_role = &user_payload.role_promote.clone().unwrap_or_default();
 
         let result = diesel::update(target)
             .set((
+                role.eq(promote_role.apply_role_change(data_my_role, data_user_role).to_string()),
                 user_payload.username.clone().map(|data| username.eq(data.to_string())),
-                role.eq(promote_role.to_string()),
+                user_payload.email.clone().map(|data| email.eq(data.to_string())),
+                user_payload.password.clone().map(|data| password_hash.eq(data.to_string())),
                 updated_at.eq(Utc::now().naive_utc().clone()),
             ))
             .returning(User::as_returning())

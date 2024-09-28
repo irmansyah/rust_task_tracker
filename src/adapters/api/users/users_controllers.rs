@@ -1,9 +1,11 @@
+use std::str::FromStr;
+
 use crate::{
     adapters::api::{
         shared::{app_state::AppState, error_presenter::ErrorResponse, success_presenter::SuccessResponse},
         users::{
             users_mappers::{UserAccessTokenPresenterMapper, UserAllPresenterMapper, UserPresenterMapper},
-            users_payloads::{UserIdPayload, UserLoginPayload, UserRefreshTokenPayload, UserRegisterPayload, UserUpdatePayload},
+            users_payloads::{UserIdPayload, UserLoginPayload, UserRefreshTokenPayload, UserRegisterPayload, UserRolePayload, UserUpdatePayload},
             users_presenters::UserAllPresenter,
         },
     },
@@ -31,7 +33,6 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
         .service(update_one_user)
         .service(update_one_user_own)
         .service(update_one_user_role)
-        .service(update_one_user_role_own)
         .service(get_all_users)
         .service(get_one_user_by_id)
         .service(get_one_user_by_id_own)
@@ -87,7 +88,7 @@ async fn update_one_user(data: web::Data<AppState>, claims: Claims, path: web::J
 #[patch("/one_own")]
 async fn update_one_user_own(data: web::Data<AppState>, claims: Claims, path: web::Json<UserUpdatePayload>) -> Result<HttpResponse, ErrorResponse> {
     let mut user_payload = path.into_inner();
-    user_payload.user_id = claims.sub.clone();
+    user_payload.user_id = Some(claims.sub.clone());
     AuthCheckUseCase::check_permission_up_to_user(claims)?;
     let update_one_user_usecase = UpdateOneUserUseCase::new(&user_payload, &data.users_repository);
 
@@ -99,21 +100,15 @@ async fn update_one_user_own(data: web::Data<AppState>, claims: Claims, path: we
 
 #[patch("/one_role")]
 async fn update_one_user_role(data: web::Data<AppState>, claims: Claims, path: web::Json<UserUpdatePayload>) -> Result<HttpResponse, ErrorResponse> {
-    AuthCheckUseCase::check_permission_up_to_admin(claims)?;
-    let user_payload = path.into_inner();
-    let update_one_user_usecase = UpdateOneUserUseCase::new(&user_payload, &data.users_repository);
-
-    match update_one_user_usecase.execute().await {
-        Ok(user) => Ok(SuccessResponse::new(StatusCode::OK, "User updated successfully", UserPresenterMapper::to_api(user)).to_http_response()),
-        Err(e) => Err(ErrorResponse::map_io_error(e)),
-    }
-}
-
-#[patch("/one_role_own")]
-async fn update_one_user_role_own(data: web::Data<AppState>, claims: Claims, path: web::Json<UserUpdatePayload>) -> Result<HttpResponse, ErrorResponse> {
     let mut user_payload = path.into_inner();
-    user_payload.user_id = claims.sub.clone();
-    AuthCheckUseCase::check_permission_up_to_user(claims)?;
+    let data_role = UserRolePayload::from_str(&claims.role.clone().to_string().as_str());
+    user_payload.role = Some(data_role.clone().unwrap_or_default());
+
+    if user_payload.user_id == Some(claims.sub.clone()) {
+        return Err(ErrorResponse::map_io_error_default("Can't self promote!!!".to_string()));
+    }
+
+    AuthCheckUseCase::check_permission_up_to_admin(claims)?;
     let update_one_user_usecase = UpdateOneUserUseCase::new(&user_payload, &data.users_repository);
 
     match update_one_user_usecase.execute().await {

@@ -34,18 +34,18 @@ mod tests {
     use super::*;
     use std::io::{Error, ErrorKind};
 
-    use crate::{adapters::api::users::users_payloads::UserRolePayload, application::repositories::users_repository_abstract::MockUsersRepositoryAbstract};
+    use crate::{adapters::api::users::users_payloads::{UserRolePayload, UserRolePromotePayload}, application::repositories::users_repository_abstract::MockUsersRepositoryAbstract};
 
     #[actix_rt::test]
     async fn test_should_return_generic_message_when_unexpected_repo_error() {
         // given the "all user users" usecase repo with an unexpected random error
         let mut user_repository = MockUsersRepositoryAbstract::new();
         let payload = UserUpdatePayload::new(
-            String::from("id1"), 
+            Some(String::from("id1")), 
             Some(String::from("user1")),
             Some(String::from("test1@gmail.com")), 
             Some(String::from("test1234")), 
-            Some(UserRolePayload::User)
+            Some(UserRolePromotePayload::Promote)
         );
         user_repository
             .expect_update_one_user()
@@ -66,13 +66,12 @@ mod tests {
     async fn test_should_return_one_result() {
         // given the "one user user by id" usecase repo returning one result
         let mut user_repository = MockUsersRepositoryAbstract::new();
-        // let payload = UserUpdatePayload::new(1, "Username 1".to_string(), "Test1@gmail.com".to_string(), "Test1234".to_string());
         let payload = UserUpdatePayload::new(
-            String::from("id1"), 
+            Some(String::from("id1")), 
             Some(String::from("user1")),
             Some(String::from("test1@gmail.com")), 
             Some(String::from("test1234")), 
-            Some(UserRolePayload::User)
+            Some(UserRolePromotePayload::Promote)
         );
         user_repository.expect_update_one_user().times(1).returning(|_| {
             Ok(UserEntity {
