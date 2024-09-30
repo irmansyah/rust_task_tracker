@@ -39,7 +39,7 @@ impl FromStr for Role {
             "super_admin" => Ok(Role::SuperAdmin),
             "admin" => Ok(Role::Admin),
             "author" => Ok(Role::Author),
-            "user" => Ok(Role::Customer),
+            "customer" => Ok(Role::Customer),
             _ => Err(format!("Invalid role: {}", s)),
         }
     }

@@ -23,6 +23,7 @@ impl TasksRepositoryAbstract for TasksRepository {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
 
         let data_user_id_uuid = Uuid::parse_str(&task_payload.user_id.clone().unwrap_or_default()).unwrap_or_default();
+        let data_project_id_uuid = Uuid::parse_str(&task_payload.project_id.clone().unwrap_or_default()).unwrap_or_default();
         let data_title = task_payload.title.clone();
         let data_typ = task_payload.typ.clone().unwrap_or_default().to_string();
         let data_priority = task_payload.priority.clone().unwrap_or_default().to_string();
@@ -30,11 +31,12 @@ impl TasksRepositoryAbstract for TasksRepository {
         let data_description = task_payload.description.clone().unwrap_or_default();
         let data_duration = task_payload.duration.unwrap_or_default();
         let data_due_date = task_payload.due_date.unwrap_or_default();
-        let data_project_id = task_payload.project_id.unwrap_or_default();
+        // let data_project_id = task_payload.project_id.unwrap_or_default();
         let data_task_list: Option<Vec<&str>> = task_payload.task_list.as_ref().map(|vec| vec.iter().map(|s| s.as_str()).collect());
 
         let new_task = TaskNew {
             user_id: &data_user_id_uuid,
+            project_id: &data_project_id_uuid,
             title: &data_title,
             typ: &data_typ,
             priority: &data_priority,
@@ -42,7 +44,6 @@ impl TasksRepositoryAbstract for TasksRepository {
             description: &data_description,
             duration: data_duration,
             due_date: data_due_date,
-            project_id: data_project_id,
             task_list: data_task_list.unwrap_or_default(),
         };
 
@@ -58,7 +59,9 @@ impl TasksRepositoryAbstract for TasksRepository {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
         let task_id_uuid = Uuid::parse_str(&task_payload.task_id).unwrap();
         let user_id_uuid = Uuid::parse_str(&task_payload.user_id.clone().unwrap_or_default()).ok();
-        let target = tasks.filter(id.eq(task_id_uuid));
+        let target = tasks::table
+            .filter(id.eq(task_id_uuid))
+            .filter(user_id.eq(user_id_uuid.unwrap()));
         let data_task_list: Option<Vec<&str>> = task_payload.task_list.as_ref().map(|vec| vec.iter().map(|s| s.as_str()).collect());
 
         let result = diesel::update(target)
@@ -71,7 +74,6 @@ impl TasksRepositoryAbstract for TasksRepository {
                 task_payload.description.clone().map(|data| description.eq(data)),
                 task_payload.duration.map(|data| duration.eq(data)),
                 task_payload.due_date.map(|data| due_date.eq(data)),
-                task_payload.project_id.map(|data| project_id.eq(data)),
                 data_task_list.map(|data| task_list.eq(data)),
             ))
             .returning(Task::as_returning())
@@ -99,8 +101,17 @@ impl TasksRepositoryAbstract for TasksRepository {
 
     async fn get_task_by_id(&self, task_payload: &TaskDataPayload) -> Result<TaskEntity, Box<dyn Error>> {
         let mut conn = self.db_connection.get_pool().get().expect("couldn't get db connection from pool");
-        let task_id_uuid = Uuid::parse_str(&task_payload.task_id.clone().unwrap()).unwrap();
-        let result = tasks.filter(id.eq(task_id_uuid)).get_result::<Task>(&mut conn);
+        let task_id_uuid = task_payload.task_id.as_ref().and_then(|data: &String| Uuid::parse_str(data).ok());
+        let user_id_uuid = task_payload.user_id.as_ref().and_then(|data: &String| Uuid::parse_str(data).ok());
+
+        let mut query = tasks.into_boxed();
+        if let Some(data) = task_id_uuid {
+            query = query.filter(id.eq(data));
+        }
+        if let Some(data) = user_id_uuid {
+            query = query.filter(user_id.eq(data));
+        }
+        let result = query.get_result::<Task>(&mut conn);
 
         match result {
             Ok(model) => Ok(TaskDbMapper::to_entity(model)),

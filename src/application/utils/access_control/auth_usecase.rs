@@ -32,7 +32,7 @@ impl AuthUseCase {
                 permissions = AuthUseCase::all_read_down_to_author();
             }
             Ok(Role::Customer) => {
-                permissions = AuthUseCase::all_read_down_to_user();
+                permissions = AuthUseCase::all_read_down_to_customer();
             }
             Err(_) => {
                 println!("Invalid role: {}", role);
@@ -47,7 +47,7 @@ impl AuthUseCase {
         permissions.insert(Permission::Read("superadmin-tasks".to_string()));
         permissions.insert(Permission::Read("admin-tasks".to_string()));
         permissions.insert(Permission::Read("author-tasks".to_string()));
-        permissions.insert(Permission::Read("user-tasks".to_string()));
+        permissions.insert(Permission::Read("customer-tasks".to_string()));
         permissions
     }
 
@@ -55,29 +55,22 @@ impl AuthUseCase {
         let mut permissions = HashSet::new();
         permissions.insert(Permission::Read("admin-tasks".to_string()));
         permissions.insert(Permission::Read("author-tasks".to_string()));
-        permissions.insert(Permission::Read("user-tasks".to_string()));
+        permissions.insert(Permission::Read("customer-tasks".to_string()));
         permissions
     }
 
     pub fn all_read_down_to_author() -> HashSet<Permission> {
         let mut permissions = HashSet::new();
         permissions.insert(Permission::Read("author-tasks".to_string()));
-        permissions.insert(Permission::Read("user-tasks".to_string()));
+        permissions.insert(Permission::Read("customer-tasks".to_string()));
         permissions
     }
 
-    pub fn all_read_down_to_user() -> HashSet<Permission> {
+    pub fn all_read_down_to_customer() -> HashSet<Permission> {
         let mut permissions = HashSet::new();
-        permissions.insert(Permission::Read("user-tasks".to_string()));
+        permissions.insert(Permission::Read("customer-tasks".to_string()));
         permissions
     }
-
-    // pub fn all_read_up_to_admin() -> HashSet<Permission> {
-    //     let mut permissions = HashSet::new();
-    //     permissions.insert(Permission::Read("superadmin-tasks".to_string()));
-    //     permissions.insert(Permission::Read("admin-tasks".to_string()));
-    //     permissions
-    // }
 
     pub fn no() -> HashSet<Permission> {
         let permissions = HashSet::new();
@@ -114,15 +107,15 @@ impl AuthUseCase {
 }
 
 impl AuthCheckUseCase {
-    pub fn check_permission_up_to_user(claims: Claims) -> Result<(), ErrorResponse> {
+    pub fn check_permission_up_to_customer(claims: Claims) -> Result<(), ErrorResponse> {
         let allowed_roles = vec![Role::SuperAdmin, Role::Admin, Role::Author, Role::Customer];
         if !claims.validate_roles(&allowed_roles) {
-            return Err(ErrorResponse::default());
+            return Err(ErrorResponse::auth_default());
         }
-        println!("Role validated: SuperAdmin, Admin, Author, User");
+        println!("Role validated: SuperAdmin, Admin, Author, Customer");
 
-        if !claims.validate_permissions(&AuthUseCase::all_read_down_to_user()) {
-            return Err(ErrorResponse::default());
+        if !claims.validate_permissions(&AuthUseCase::all_read_down_to_customer()) {
+            return Err(ErrorResponse::auth_default());
         }
 
         println!("Role validated: Success");
@@ -132,12 +125,12 @@ impl AuthCheckUseCase {
     pub fn check_permission_up_to_author(claims: Claims) -> Result<(), ErrorResponse> {
         let allowed_roles = vec![Role::SuperAdmin, Role::Admin, Role::Author];
         if !claims.validate_roles(&allowed_roles) {
-            return Err(ErrorResponse::default());
+            return Err(ErrorResponse::auth_default());
         }
-        println!("Role validated: Admin, Author, User");
+        println!("Role validated: SuperAdmin, Admin, Author");
 
         if !claims.validate_permissions(&AuthUseCase::all_read_down_to_author()) {
-            return Err(ErrorResponse::default());
+            return Err(ErrorResponse::auth_default());
         }
 
         println!("Role validated: Success");
@@ -147,12 +140,12 @@ impl AuthCheckUseCase {
     pub fn check_permission_up_to_admin(claims: Claims) -> Result<(), ErrorResponse> {
         let allowed_roles = vec![Role::SuperAdmin, Role::Admin];
         if !claims.validate_roles(&allowed_roles) {
-            return Err(ErrorResponse::default());
+            return Err(ErrorResponse::auth_default());
         }
-        println!("Role validated: Author, User");
+        println!("Role validated: SuperAdmin, Admin");
 
         if !claims.validate_permissions(&AuthUseCase::all_read_down_to_admin()) {
-            return Err(ErrorResponse::default());
+            return Err(ErrorResponse::auth_default());
         }
 
         println!("Role validated: Success");
@@ -162,12 +155,12 @@ impl AuthCheckUseCase {
     pub fn check_permission_up_to_superadmin(claims: Claims) -> Result<(), ErrorResponse> {
         let allowed_roles = vec![Role::SuperAdmin];
         if !claims.validate_roles(&allowed_roles) {
-            return Err(ErrorResponse::default());
+            return Err(ErrorResponse::auth_default());
         }
-        println!("Role validated: User");
+        println!("Role validated: SuperAdmin");
 
         if !claims.validate_permissions(&AuthUseCase::all_read_down_to_superadmin()) {
-            return Err(ErrorResponse::default());
+            return Err(ErrorResponse::auth_default());
         }
 
         println!("Role validated: Success");

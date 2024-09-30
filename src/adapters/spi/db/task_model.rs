@@ -9,6 +9,7 @@ use chrono::NaiveDateTime;
 pub struct Task {
     pub id: Uuid,
     pub user_id: Uuid,
+    pub project_id: Uuid,
     pub title: String,
     pub typ: Option<String>,
     pub priority: Option<String>,
@@ -16,7 +17,6 @@ pub struct Task {
     pub description: String,
     pub duration: Option<i32>,
     pub due_date: Option<i64>,
-    pub project_id: Option<i32>,
     pub task_list: Option<Vec<String>>,
     pub updated_at: NaiveDateTime,
     pub created_at: NaiveDateTime,
@@ -26,6 +26,7 @@ pub struct Task {
 #[diesel(table_name = tasks)]
 pub struct TaskNew<'a> {
     pub user_id: &'a Uuid,
+    pub project_id: &'a Uuid,
     pub title: &'a str,
     pub typ: &'a str,
     pub priority: &'a str,
@@ -33,7 +34,6 @@ pub struct TaskNew<'a> {
     pub description: &'a str,
     pub duration: i32,
     pub due_date: i64,
-    pub project_id: i32,
     pub task_list: Vec<&'a str>,
 }
 
@@ -41,6 +41,7 @@ pub struct TaskNew<'a> {
 #[diesel(table_name = tasks)]
 pub struct TaskUpdate<'a> {
     pub user_id: Option<&'a Uuid>,
+    pub project_id: Option<&'a Uuid>,
     pub title: &'a str,
     pub typ: Option<&'a str>,
     pub priority: Option<&'a str>,
@@ -48,7 +49,6 @@ pub struct TaskUpdate<'a> {
     pub description: &'a str,
     pub duration: Option<&'a i32>,
     pub due_date: Option<&'a i64>,
-    pub project_id: Option<&'a i32>,
     pub task_list: Option<Vec<&'a str>>,
     pub updated_at: NaiveDateTime,
 }

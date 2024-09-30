@@ -53,7 +53,7 @@ async fn post_one_task(data: web::Data<AppState>, claims: Claims, path: web::Jso
 async fn post_one_task_own(data: web::Data<AppState>, claims: Claims, path: web::Json<TaskCreatePayload>) -> Result<HttpResponse, ErrorResponse> {
     let mut task_payload = path.into_inner();
     task_payload.user_id = Some(claims.sub.clone());
-    AuthCheckUseCase::check_permission_up_to_user(claims)?;
+    AuthCheckUseCase::check_permission_up_to_customer(claims)?;
     let post_one_task_usecase = PostOneTaskUseCase::new(&task_payload, &data.tasks_repository);
 
     match post_one_task_usecase.execute().await {
@@ -102,7 +102,7 @@ async fn get_all_tasks_by_user_id(data: web::Data<AppState>, claims: Claims, pat
 async fn get_all_tasks_by_user_id_own(data: web::Data<AppState>, claims: Claims, path: Option<web::Json<TaskDataPayload>>) -> Result<HttpResponse, ErrorResponse> {
     let mut task_payload = path.unwrap_or_else(|| web::Json(TaskDataPayload::default())).into_inner();
     task_payload.user_id = Some(claims.sub.clone());
-    AuthCheckUseCase::check_permission_up_to_user(claims)?;
+    AuthCheckUseCase::check_permission_up_to_customer(claims)?;
     let get_all_tasks_usecase = GetAllTasksUseCase::new(&task_payload, &data.tasks_repository);
     let tasks: Result<Vec<TaskAllEntity>, ApiError> = get_all_tasks_usecase.execute().await;
 
@@ -133,7 +133,7 @@ async fn update_one_task(data: web::Data<AppState>, claims: Claims, path: web::J
 async fn update_one_task_own(data: web::Data<AppState>, claims: Claims, path: web::Json<TaskUpdatePayload>) -> Result<HttpResponse, ErrorResponse> {
     let mut task_payload = path.into_inner();
     task_payload.user_id = Some(claims.sub.clone());
-    AuthCheckUseCase::check_permission_up_to_user(claims)?;
+    AuthCheckUseCase::check_permission_up_to_customer(claims)?;
     let update_one_task_usecase = UpdateOneTaskUseCase::new(&task_payload, &data.tasks_repository);
 
     match update_one_task_usecase.execute().await {
@@ -144,7 +144,7 @@ async fn update_one_task_own(data: web::Data<AppState>, claims: Claims, path: we
 
 #[get("/one")]
 async fn get_one_task_by_id(data: web::Data<AppState>, claims: Claims, path: web::Json<TaskDataPayload>) -> Result<HttpResponse, ErrorResponse> {
-    AuthCheckUseCase::check_permission_up_to_user(claims)?;
+    AuthCheckUseCase::check_permission_up_to_customer(claims)?;
     let task_payload = path.into_inner();
     let get_one_task_by_id_usecase = GetOneTaskByIdUseCase::new(&task_payload, &data.tasks_repository);
 
@@ -155,10 +155,10 @@ async fn get_one_task_by_id(data: web::Data<AppState>, claims: Claims, path: web
 }
 
 #[get("/one_own")]
-async fn get_one_task_by_id_own(data: web::Data<AppState>, claims: Claims, path: Option<web::Json<TaskDataPayload>>) -> Result<HttpResponse, ErrorResponse> {
-    let mut task_payload = path.unwrap_or_else(|| web::Json(TaskDataPayload::default())).into_inner();
+async fn get_one_task_by_id_own(data: web::Data<AppState>, claims: Claims, path: web::Json<TaskDataPayload>) -> Result<HttpResponse, ErrorResponse> {
+    let mut task_payload = path.into_inner();
     task_payload.user_id = Some(claims.sub.clone());
-    AuthCheckUseCase::check_permission_up_to_user(claims)?;
+    AuthCheckUseCase::check_permission_up_to_customer(claims)?;
     let get_one_task_by_id_usecase = GetOneTaskByIdUseCase::new(&task_payload, &data.tasks_repository);
 
     match get_one_task_by_id_usecase.execute().await {
@@ -169,7 +169,7 @@ async fn get_one_task_by_id_own(data: web::Data<AppState>, claims: Claims, path:
 
 #[delete("/one")]
 async fn delete_one_task_by_id(data: web::Data<AppState>, claims: Claims, path: web::Json<TaskDataPayload>) -> Result<HttpResponse, ErrorResponse> {
-    AuthCheckUseCase::check_permission_up_to_user(claims)?;
+    AuthCheckUseCase::check_permission_up_to_customer(claims)?;
     let task_payload = path.into_inner();
     let delete_one_task_usecase = DeleteOneTaskByIdUseCase::new(&task_payload, &data.tasks_repository);
 
@@ -183,7 +183,7 @@ async fn delete_one_task_by_id(data: web::Data<AppState>, claims: Claims, path: 
 async fn delete_one_task_by_id_own(data: web::Data<AppState>, claims: Claims, path: Option<web::Json<TaskDataPayload>>) -> Result<HttpResponse, ErrorResponse> {
     let mut task_payload = path.unwrap_or_else(|| web::Json(TaskDataPayload::default())).into_inner();
     task_payload.user_id = Some(claims.sub.clone());
-    AuthCheckUseCase::check_permission_up_to_user(claims)?;
+    AuthCheckUseCase::check_permission_up_to_customer(claims)?;
     let delete_one_task_usecase = DeleteOneTaskByIdUseCase::new(&task_payload, &data.tasks_repository);
 
     match delete_one_task_usecase.execute().await {

@@ -21,7 +21,7 @@ use crate::{
         },
         utils::access_control::{auth_usecase::AuthCheckUseCase, extractors::claims::Claims},
     },
-    domain::{error::ApiError, user_entity::{UserAllEntity, UserEntity}},
+    domain::{error::ApiError, user_entity::UserAllEntity},
 };
 use actix_web::{delete, get, patch, post, web, HttpResponse};
 use reqwest::StatusCode;
@@ -89,7 +89,7 @@ async fn update_one_user(data: web::Data<AppState>, claims: Claims, path: web::J
 async fn update_one_user_own(data: web::Data<AppState>, claims: Claims, path: web::Json<UserUpdatePayload>) -> Result<HttpResponse, ErrorResponse> {
     let mut user_payload = path.into_inner();
     user_payload.user_id = Some(claims.sub.clone());
-    AuthCheckUseCase::check_permission_up_to_user(claims)?;
+    AuthCheckUseCase::check_permission_up_to_customer(claims)?;
     let update_one_user_usecase = UpdateOneUserUseCase::new(&user_payload, &data.users_repository);
 
     match update_one_user_usecase.execute().await {
@@ -149,7 +149,7 @@ async fn get_one_user_by_id(data: web::Data<AppState>, claims: Claims, path: web
 #[get("/one_own")]
 async fn get_one_user_by_id_own(data: web::Data<AppState>, claims: Claims) -> Result<HttpResponse, ErrorResponse> {
     let user_payload = UserIdPayload { user_id: claims.sub.clone() };
-    AuthCheckUseCase::check_permission_up_to_user(claims)?;
+    AuthCheckUseCase::check_permission_up_to_customer(claims)?;
     let get_one_user_by_id_usecase = GetOneUserByIdUseCase::new(&user_payload, &data.users_repository);
 
     match get_one_user_by_id_usecase.execute().await {
@@ -173,7 +173,7 @@ async fn delete_one_user_by_id(data: web::Data<AppState>, claims: Claims, path: 
 #[delete("/one_own")]
 async fn delete_one_user_by_id_own(data: web::Data<AppState>, claims: Claims) -> Result<HttpResponse, ErrorResponse> {
     let user_payload = UserIdPayload { user_id: claims.sub.clone() };
-    AuthCheckUseCase::check_permission_up_to_user(claims)?;
+    AuthCheckUseCase::check_permission_up_to_customer(claims)?;
     let delete_one_user_usecase = DeleteOneUserByIdUseCase::new(&user_payload, &data.users_repository);
 
     match delete_one_user_usecase.execute().await {

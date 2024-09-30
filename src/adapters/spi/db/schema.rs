@@ -27,6 +27,7 @@ diesel::table! {
     tasks (id) {
         id -> Uuid,
         user_id -> Uuid,
+        project_id -> Uuid,
         title -> Text,
         typ -> Nullable<Text>,
         priority -> Nullable<Text>,
@@ -34,7 +35,6 @@ diesel::table! {
         description -> Text,
         duration -> Nullable<Int4>,
         due_date -> Nullable<BigInt>,
-        project_id -> Nullable<Int4>,
         task_list ->  Nullable<Array<Text>>,
         updated_at -> Timestamp,
         created_at -> Timestamp,

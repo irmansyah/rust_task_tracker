@@ -72,6 +72,7 @@ mod tests {
             Ok(TaskEntity {
                 id: String::from("id1"),
                 user_id: String::from("id1"),
+                project_id: String::from("id1"),
                 title: String::from("task1"),
                 typ: TaskTypePayload::Work.to_string(),
                 priority: TaskPriorityPayload::Low.to_string(),
@@ -79,7 +80,6 @@ mod tests {
                 description: String::from(""),
                 duration: 1,
                 due_date: 321472382,
-                project_id: 1,
                 task_list: [].to_vec(),
                 updated_at: todo!(),
                 created_at: todo!(),

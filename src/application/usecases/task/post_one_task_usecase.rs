@@ -44,13 +44,13 @@ mod tests {
         // given the "all task tasks" usecase repo with an unexpected random error
         let mut task_repository = MockTasksRepositoryAbstract::new();
         let payload = TaskCreatePayload::new(
-            Some(String::from("task1")),
+            Some(String::from("id1")),
+            Some(String::from("id1")),
             String::from("user1"),
             Some(TaskTypePayload::Work),
             Some(TaskPriorityPayload::Low),
             Some(TaskStatusPayload::ToDo(TaskStatusToDoPayload::NotStarted)),
             Some(String::from("")),
-            Some(1),
             Some(321472382),
             Some(1),
             Some([].to_vec()),
@@ -75,13 +75,13 @@ mod tests {
         // given the "one task task by id" usecase repo returning one result
         let mut task_repository = MockTasksRepositoryAbstract::new();
         let payload = TaskCreatePayload::new(
-            Some(String::from("task1")),
+            Some(String::from("id1")),
+            Some(String::from("id1")),
             String::from("user1"),
             Some(TaskTypePayload::Work),
             Some(TaskPriorityPayload::Low),
             Some(TaskStatusPayload::ToDo(TaskStatusToDoPayload::NotStarted)),
             Some(String::from("")),
-            Some(1),
             Some(321472382),
             Some(1),
             Some([].to_vec()),
@@ -89,7 +89,8 @@ mod tests {
         task_repository.expect_post_one_task().times(1).returning(|_| {
             Ok(TaskEntity {
                 id: String::from("task1"),
-                user_id: String::from("user1"),
+                user_id: String::from("id1"),
+                project_id: String::from("id1"),
                 title: String::from("task1"),
                 typ: TaskTypePayload::Work.to_string(),
                 priority: TaskPriorityPayload::Low.to_string(),
@@ -97,7 +98,6 @@ mod tests {
                 description: String::from(""),
                 duration: 1,
                 due_date: 321472382,
-                project_id: 1,
                 task_list: [].to_vec(),
                 updated_at: todo!(),
                 created_at: todo!(),

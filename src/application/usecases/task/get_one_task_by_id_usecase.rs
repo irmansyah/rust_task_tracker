@@ -35,7 +35,7 @@ mod tests {
     use std::io::{Error, ErrorKind};
 
     use crate::{
-        adapters::api::{tasks::tasks_payloads::*, tasks::tasks_payloads::TaskDataPayload},
+        adapters::api::{tasks::tasks_payloads::TaskDataPayload, tasks::tasks_payloads::*},
         application::repositories::tasks_repository_abstract::MockTasksRepositoryAbstract,
         domain::task_entity::TaskEntity,
     };
@@ -69,6 +69,7 @@ mod tests {
             Ok(TaskEntity {
                 id: String::from("id1"),
                 user_id: String::from("id1"),
+                project_id: String::from("id1"),
                 title: String::from("task1"),
                 typ: TaskTypePayload::Work.to_string(),
                 priority: TaskPriorityPayload::Low.to_string(),
@@ -76,7 +77,6 @@ mod tests {
                 description: String::from(""),
                 duration: 1,
                 due_date: 321472382,
-                project_id: 1,
                 task_list: [].to_vec(),
                 updated_at: todo!(),
                 created_at: todo!(),

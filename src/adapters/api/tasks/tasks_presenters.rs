@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 pub struct TaskPresenter {
     pub task_id: String,
     pub user_id: String,
+    pub project_id: String,
     pub title: String,
     pub typ: String,
     pub priority: String,
@@ -11,7 +12,6 @@ pub struct TaskPresenter {
     pub description: String,
     pub duration: i32,
     pub due_date: i64,
-    pub project_id: i32,
     pub task_list: Vec<String>,
     pub updated_at: i64,
     pub created_at: i64,
@@ -21,6 +21,7 @@ pub struct TaskPresenter {
 pub struct TaskAllPresenter {
     pub task_id: String,
     pub user_id: String,
+    pub project_id: String,
     pub title: String,
     pub description: String,
     pub updated_at: i64,

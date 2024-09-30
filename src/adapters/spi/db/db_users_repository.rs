@@ -12,7 +12,10 @@ use crate::adapters::api::users::users_payloads::*;
 use crate::application::mappers::db_mapper::DbMapper;
 use crate::application::utils::access_control::auth_usecase::AuthUseCase;
 use crate::application::utils::validate_params;
-use crate::{application::repositories::users_repository_abstract::UsersRepositoryAbstract, domain::user_entity::{UserEntity, UserAllEntity, UserAccessTokenEntity}};
+use crate::{
+    application::repositories::users_repository_abstract::UsersRepositoryAbstract,
+    domain::user_entity::{UserAccessTokenEntity, UserAllEntity, UserEntity},
+};
 
 use super::db_users_mappers::{UserAccessTokenDbMapper, UserAllDbMapper, UserDbMapper};
 use super::schema::users::{self, *};
@@ -106,7 +109,7 @@ impl UsersRepositoryAbstract for UsersRepository {
 
         let claims = match AuthUseCase::validate_token(&user_payload.refresh_token) {
             Ok(data) => data,
-            Err(_) => return Err(Box::new(ErrorResponse::default())), // Box the ClientError
+            Err(_) => return Err(Box::new(ErrorResponse::auth_default())), // Box the ClientError
         };
 
         let user_id = Uuid::parse_str(&claims.sub)?;

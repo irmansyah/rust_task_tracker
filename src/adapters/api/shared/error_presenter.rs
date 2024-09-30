@@ -1,5 +1,3 @@
-use std::fmt;
-
 use crate::application::utils::access_control::extractors::claims::ClientError;
 use crate::domain::error::ApiError;
 use actix_web::{error::ResponseError, http::StatusCode, HttpResponse};
@@ -13,15 +11,6 @@ pub struct ErrorPresenter {
     pub message: String,
     pub data: Option<serde_json::Value>,
 }
-
-// #[derive(Error, Debug, Display)]
-// pub struct ErrorMessage {
-//     #[serde(skip_serializing_if = "Option::is_none")]
-//     pub code: Option<StatusCode>,
-//     #[serde(skip_serializing_if = "Option::is_none")]
-//     pub message: Option<String>,
-//     pub data: Option<serde_json::Value>,
-// }
 
 #[derive(Serialize)]
 pub struct ErrorMessage {
@@ -39,27 +28,6 @@ pub struct ErrorResponse {
     message: String,
     data: Option<serde_json::Value>,
 }
-
-impl Default for ErrorResponse {
-    fn default() -> Self {
-        ErrorResponse {
-            code: StatusCode::BAD_REQUEST,
-            message: "Permission denied".to_string(),
-            data: None,
-        }
-    }
-}
-
-// #[derive(Debug)]
-// struct StringError(String);
-
-// impl fmt::Display for StringError {
-//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//         write!(f, "{}", self.0)
-//     }
-// }
-
-// impl std::error::Error for StringError {}
 
 impl ResponseError for ErrorResponse {
     fn status_code(&self) -> StatusCode {
@@ -112,6 +80,14 @@ impl ErrorResponse {
         ErrorResponse {
             code: StatusCode::BAD_REQUEST,
             message: e,
+            data: None,
+        }
+    }
+
+    pub fn auth_default() -> ErrorResponse {
+        ErrorResponse {
+            code: StatusCode::UNAUTHORIZED,
+            message: "Permission denied".to_string(),
             data: None,
         }
     }

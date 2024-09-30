@@ -14,6 +14,7 @@ impl DbMapper<TaskEntity, Task> for TaskDbMapper {
         Task {
             id: Uuid::parse_str(&entity.id).unwrap_or_default(),
             user_id: Uuid::parse_str(&entity.user_id).unwrap_or_default(),
+            project_id: Uuid::parse_str(&entity.project_id).unwrap_or_default(),
             title: entity.title,
             typ: Some(entity.typ),
             status: Some(entity.status),
@@ -21,7 +22,6 @@ impl DbMapper<TaskEntity, Task> for TaskDbMapper {
             description: entity.description,
             duration: Some(entity.duration),
             due_date: Some(entity.due_date),
-            project_id: Some(entity.project_id),
             task_list: Some(entity.task_list),
             updated_at: todo!(),
             created_at: todo!(),
@@ -32,6 +32,7 @@ impl DbMapper<TaskEntity, Task> for TaskDbMapper {
         TaskEntity {
             id: model.id.to_string(),
             user_id: model.user_id.to_string(),
+            project_id: model.project_id.to_string(),
             title: model.title,
             typ: model.typ.unwrap_or_default(),
             priority: model.priority.unwrap_or_default(),
@@ -39,7 +40,6 @@ impl DbMapper<TaskEntity, Task> for TaskDbMapper {
             description: model.description,
             duration: model.duration.unwrap_or_default(),
             due_date: model.due_date.unwrap_or_default(),
-            project_id: model.project_id.unwrap_or_default(),
             task_list: model.task_list.unwrap_or_default(),
             updated_at: model.updated_at,
             created_at: model.created_at,
@@ -52,6 +52,7 @@ impl DbMapper<TaskAllEntity, Task> for TaskAllDbMapper {
         Task {
             id: Uuid::parse_str(&entity.id).unwrap_or_default(),
             user_id: Uuid::parse_str(&entity.user_id).unwrap_or_default(),
+            project_id: Uuid::parse_str(&entity.project_id).unwrap_or_default(),
             title: entity.title,
             description: entity.description,
             typ: todo!(),
@@ -59,7 +60,6 @@ impl DbMapper<TaskAllEntity, Task> for TaskAllDbMapper {
             status: todo!(),
             duration: todo!(),
             due_date: todo!(),
-            project_id: todo!(),
             task_list: todo!(),
             updated_at: todo!(),
             created_at: todo!(),
@@ -70,6 +70,7 @@ impl DbMapper<TaskAllEntity, Task> for TaskAllDbMapper {
         TaskAllEntity {
             id: model.id.to_string(),
             user_id: model.user_id.to_string(),
+            project_id: model.project_id.to_string(),
             title: model.title,
             description: model.description,
             updated_at: model.updated_at,

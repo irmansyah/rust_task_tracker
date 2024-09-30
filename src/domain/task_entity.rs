@@ -4,6 +4,7 @@ use chrono::NaiveDateTime;
 pub struct TaskEntity {
     pub id: String,
     pub user_id: String,
+    pub project_id: String,
     pub title: String,
     pub typ: String,
     pub priority: String,
@@ -11,7 +12,6 @@ pub struct TaskEntity {
     pub description: String,
     pub duration: i32,
     pub due_date: i64,
-    pub project_id: i32,
     pub task_list: Vec<String>,
     pub updated_at: NaiveDateTime,
     pub created_at: NaiveDateTime,
@@ -21,6 +21,7 @@ impl TaskEntity {
     pub fn new(
         id: String,
         user_id: String,
+        project_id: String,
         title: String,
         typ: String,
         priority: String,
@@ -28,7 +29,6 @@ impl TaskEntity {
         description: String,
         duration: i32,
         due_date: i64,
-        project_id: i32,
         task_list: Vec<String>,
         updated_at: NaiveDateTime,
         created_at: NaiveDateTime,
@@ -36,6 +36,7 @@ impl TaskEntity {
         TaskEntity {
             id,
             user_id,
+            project_id,
             title,
             typ,
             priority,
@@ -43,7 +44,6 @@ impl TaskEntity {
             description,
             duration,
             due_date,
-            project_id,
             task_list,
             updated_at,
             created_at,
@@ -55,6 +55,7 @@ impl TaskEntity {
 pub struct TaskAllEntity {
     pub id: String,
     pub user_id: String,
+    pub project_id: String,
     pub title: String,
     pub description: String,
     pub updated_at: NaiveDateTime,
@@ -65,6 +66,7 @@ impl TaskAllEntity {
     pub fn new(
         id: String,
         user_id: String,
+        project_id: String,
         title: String,
         description: String,
         updated_at: NaiveDateTime,
@@ -73,6 +75,7 @@ impl TaskAllEntity {
         TaskAllEntity {
             id,
             user_id,
+            project_id,
             title,
             description,
             updated_at,
