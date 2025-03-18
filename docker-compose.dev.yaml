@@ -24,20 +24,22 @@ services:
       - /usr/src/backend/target
     environment:
       DATABASE_URL: postgres://tasktracker_user:tasktracker_password@postgres:5432
+      # DATABASE_URL: postgres://tasktracker_user:tasktracker_password@postgres:5432/tasktracker_db
     depends_on:
       - postgres
 
   postgres:
     container_name: dev_tasktracker_postgres
-    image: postgres:latest
+    # image: postgres
+    image: postgis/postgis:16-3.5
     environment:
       POSTGRES_USER: tasktracker_user
       POSTGRES_PASSWORD: tasktracker_password
       POSTGRES_DB: tasktracker_db
+    ports:
+      - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
-    # command: |
-    #   sh -c "psql -U diesel -d tasktracker_db -c 'CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";' && psql -U diesel -d tasktracker_db -f /migrations/init.sql"
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  db_data:
+  postgres_data:

@@ -124,16 +124,16 @@ impl fmt::Display for TaskStatusInProgressPayload {
     }
 }
 
-// #[derive(Serialize, Deserialize, Debug)]
-// pub struct TaskIdPayload {
-//     pub task_id: String,
-// }
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TaskIdPayload {
+    pub task_id: String,
+}
 
-// impl TaskIdPayload {
-//     pub fn new(task_id: String) -> Self {
-//         TaskIdPayload { task_id }
-//     }
-// }
+impl TaskIdPayload {
+    pub fn new(task_id: String) -> Self {
+        TaskIdPayload { task_id }
+    }
+}
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct TaskDataPayload {

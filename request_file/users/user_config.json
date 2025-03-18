@@ -1,0 +1,64 @@
+{
+  "app_title": "This is Task Tracker Users",
+  "base_url": "http://localhost:8080/api/v1/users",
+  "access_token_file": "/home/mane/works/working_tools/task_tracker/task_tracker_backend/request_file/access_token.txt",
+  "requests": [
+    {
+      "req_tag": "user_register_superadmin",
+      "req_title": "User Register Super Admin",
+      "req_type": "POST",
+      "req_end_point": "/register",
+      "req_token_path": "data.access_token",
+      "req_token_save": false,
+      "req_body": {
+        "body_type": "RAW",
+        "body_file": "/home/mane/works/working_tools/task_tracker/task_tracker_backend/request_file/users/user_register_post_superadmin_body.json"
+      }
+    },
+    {
+      "req_tag": "user_register_customer",
+      "req_title": "User Register Customer",
+      "req_type": "POST",
+      "req_end_point": "/register",
+      "req_token_path": "data.access_token",
+      "req_token_save": false,
+      "req_body": {
+        "body_type": "RAW",
+        "body_file": "/home/mane/works/working_tools/task_tracker/task_tracker_backend/request_file/users/user_register_post_customer_body.json"
+      }
+    },
+    {
+      "req_tag": "user_login_superadmin",
+      "req_title": "User Login Super Admin",
+      "req_type": "POST",
+      "req_end_point": "/login",
+      "req_token_path": "data.access_token",
+      "req_token_save": true,
+      "req_body": {
+        "body_type": "RAW",
+        "body_file": "/home/mane/works/working_tools/task_tracker/task_tracker_backend/request_file/users/user_login_post_superadmin_body.json"
+      }
+    },
+    {
+      "req_tag": "user_login_customer",
+      "req_title": "User Login Customer",
+      "req_type": "POST",
+      "req_end_point": "/login",
+      "req_token_path": "data.access_token",
+      "req_token_save": true,
+      "req_body": {
+        "body_type": "RAW",
+        "body_file": "/home/mane/works/working_tools/task_tracker/task_tracker_backend/request_file/users/user_login_post_customer_body.json"
+      }
+    },
+    {
+      "req_tag": "user_get_all",
+      "req_title": "Get Users All",
+      "req_type": "GET",
+      "req_end_point": "/all",
+      "req_token_path": "data.access_token",
+      "req_token_type": "Bearer",
+      "req_body": null
+    }
+  ]
+}

@@ -31,7 +31,6 @@ impl TasksRepositoryAbstract for TasksRepository {
         let data_description = task_payload.description.clone().unwrap_or_default();
         let data_duration = task_payload.duration.unwrap_or_default();
         let data_due_date = task_payload.due_date.unwrap_or_default();
-        // let data_project_id = task_payload.project_id.unwrap_or_default();
         let data_task_list: Option<Vec<&str>> = task_payload.task_list.as_ref().map(|vec| vec.iter().map(|s| s.as_str()).collect());
 
         let new_task = TaskNew {
